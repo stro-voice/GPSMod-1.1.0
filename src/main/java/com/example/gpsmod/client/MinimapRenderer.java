@@ -4,7 +4,7 @@ import com.example.gpsmod.GPSMod;
 import com.example.gpsmod.GPSManager;
 import com.mojang.blaze3d.matrix.MatrixStack;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.AbstractGui;
+import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.util.math.BlockPos;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.RenderGameOverlayEvent;
@@ -29,15 +29,14 @@ public class MinimapRenderer {
         int screenWidth = event.getWindow().getScaledWidth();
         int screenHeight = event.getWindow().getScaledHeight();
 
-        // Позиция: Нижний правый угол
         int x = screenWidth - MAP_SIZE - 15;
         int y = screenHeight - MAP_SIZE - 15;
 
-        // 1. Рисуем темную рамку в стиле ETS 2
-        AbstractGui.fill(matrixStack, x - 3, y - 3, x + MAP_SIZE + 3, y + MAP_SIZE + 3, 0xDD111111);
-        AbstractGui.fill(matrixStack, x, y, x + MAP_SIZE, y + MAP_SIZE, 0xFF050505);
+        // 1. Рисуем рамку мини-карты
+        Screen.fill(matrixStack, x - 3, y - 3, x + MAP_SIZE + 3, y + MAP_SIZE + 3, 0xDD111111);
+        Screen.fill(matrixStack, x, y, x + MAP_SIZE, y + MAP_SIZE, 0xFF050505);
 
-        // 2. Отрисовка маршрута по железным блокам
+        // 2. Отрисовка маршрута
         List<BlockPos> path = GPSManager.getInstance().getCurrentPath();
         BlockPos playerPos = new BlockPos(mc.player.getPositionVec());
 
@@ -50,7 +49,7 @@ public class MinimapRenderer {
                 int mapY = y + (MAP_SIZE / 2) + dz;
 
                 if (mapX >= x && mapX < x + MAP_SIZE && mapY >= y && mapY < y + MAP_SIZE) {
-                    AbstractGui.fill(matrixStack, mapX - 1, mapY - 1, mapX + 1, mapY + 1, 0xFFFF8C00);
+                    Screen.fill(matrixStack, mapX - 1, mapY - 1, mapX + 1, mapY + 1, 0xFFFF8C00);
                 }
             }
         }
@@ -58,6 +57,6 @@ public class MinimapRenderer {
         // 3. Игрок в центре (синяя точка)
         int centerX = x + (MAP_SIZE / 2);
         int centerY = y + (MAP_SIZE / 2);
-        AbstractGui.fill(matrixStack, centerX - 2, centerY - 2, centerX + 2, centerY + 2, 0xFF00AAFF);
+        Screen.fill(matrixStack, centerX - 2, centerY - 2, centerX + 2, centerY + 2, 0xFF00AAFF);
     }
 }

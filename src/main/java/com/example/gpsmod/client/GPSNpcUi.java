@@ -35,9 +35,7 @@ public class GPSNpcUi extends Screen {
         this.addButton(new Button(this.guiLeft + 15, this.guiTop + 75, 170, 20, 
             new StringTextComponent("Сбросить маршрут"), (button) -> {
                 GPSManager.getInstance().clearPath();
-                if (this.minecraft != null) {
-                    this.minecraft.displayGuiScreen(null);
-                }
+                this.closeScreen();
             }));
     }
 
