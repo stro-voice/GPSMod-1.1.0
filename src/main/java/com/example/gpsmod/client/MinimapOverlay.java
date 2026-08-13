@@ -1,9 +1,10 @@
 package com.example.gpsmod.client;
 
 import com.mojang.blaze3d.matrix.MatrixStack;
+import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.AbstractGui;
-import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.vector.Vector3f;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.RenderGameOverlayEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -21,37 +22,54 @@ public class MinimapOverlay {
 
         MatrixStack matrixStack = event.getMatrixStack();
 
-        // Размеры и позиция прямоугольника в правом нижнем углу
-        int mapWidth = 140;
-        int mapHeight = 90;
-        int margin = 10;
+        // Позиция прямоугольника строго ВНИЗУ СПРАВА
+        int mapW = 150;
+        int mapH = 95;
+        int margin = 12;
 
-        int screenWidth = mc.getWindow().getGuiScaledWidth();
-        int screenHeight = mc.getWindow().getGuiScaledHeight();
+        int screenW = mc.getWindow().getGuiScaledWidth();
+        int screenH = mc.getWindow().getGuiScaledHeight();
 
-        int x1 = screenWidth - mapWidth - margin;
-        int y1 = screenHeight - mapHeight - margin;
-        int x2 = screenWidth - margin;
-        int y2 = screenHeight - margin;
+        int x1 = screenW - mapW - margin;
+        int y1 = screenH - mapH - margin;
+        int x2 = screenW - margin;
+        int y2 = screenH - margin;
 
-        // Отрисовка темной рамки-планшета (фон и границы)
-        AbstractGui.fill(matrixStack, x1 - 2, y1 - 2, x2 + 2, y2 + 2, 0xFF111111); // Внешняя рамка
-        AbstractGui.fill(matrixStack, x1, y1, x2, y2, 0xCC1E1E1E);             // Фон карты
+        // Рамка и фон прямоугольной миникарты
+        AbstractGui.fill(matrixStack, x1 - 2, y1 - 2, x2 + 2, y2 + 2, 0xFF0D0D0D);
+        AbstractGui.fill(matrixStack, x1, y1, x2, y2, 0xDD181818);
 
-        // Игрок в центре прямоугольной карты
-        int playerCenterX = x1 + mapWidth / 2;
-        int playerCenterY = y1 + mapHeight / 2;
+        int centerX = x1 + mapW / 2;
+        int centerY = y1 + mapH / 2;
 
-        // Рисуем указатель игрока (зеленый квадрат в центре)
-        AbstractGui.fill(matrixStack, playerCenterX - 2, playerCenterY - 2, playerCenterX + 2, playerCenterY + 2, 0xFF00FF00);
+        // РЕНДЕР 3D ИЗОМЕТРИИ И МАШИНКИ
+        matrixStack.pushPose();
+        matrixStack.translate(centerX, centerY, 100);
 
-        // Информационная надпись внизу карты
-        mc.font.drawShadow(matrixStack, "GPS ON", x1 + 5, y1 + 5, 0x55FF55);
+        // Наклоняем плоскость карты для создания 3D-эффекта изометрии
+        matrixStack.mulPose(Vector3f.XP.rotationDegrees(55.0f));
 
+        // Отрисовка дорожной полосы на 3D карте
+        AbstractGui.fill(matrixStack, -5, -35, 5, 35, 0xFF555555);
+
+        // Поворачиваем 3D Машинку за поворотом головы игрока
+        float yaw = mc.player.yRot;
+        matrixStack.mulPose(Vector3f.ZP.rotationDegrees(-yaw));
+
+        // 3D Моделька Машинки (Корпус + Капот)
+        AbstractGui.fill(matrixStack, -4, -7, 4, 7, 0xFFCC0000);   // Красный кузов
+        AbstractGui.fill(matrixStack, -3, -3, 3, 2, 0xFF111111);   // Лобовое стекло/салон
+        AbstractGui.fill(matrixStack, -3, -7, 3, -5, 0xFFFFD700);  // Желтые фары впереди
+
+        matrixStack.popPose();
+
+        // Надпись статуса
         if (MapScreen.targetPos != null) {
-            double dist = Math.sqrt(mc.player.blockPosition().distSqr(MapScreen.targetPos));
-            String distText = String.format("%.0fm", dist);
-            mc.font.drawShadow(matrixStack, distText, x2 - mc.font.width(distText) - 5, y1 + 5, 0xFFFF55);
+            if (MapScreen.isOffroadMode) {
+                mc.font.drawShadow(matrixStack, "БЕЗДОРОЖЬЕ", x1 + 5, y1 + 5, 0xFF5555);
+            } else {
+                mc.font.drawShadow(matrixStack, "GPS: ДОРОГА", x1 + 5, y1 + 5, 0x55FF55);
+            }
         }
     }
 }
