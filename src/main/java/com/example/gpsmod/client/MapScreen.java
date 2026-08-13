@@ -1,7 +1,7 @@
-package com.gpsmod.client;
+package com.example.gpsmod.client;
 
-import com.gpsmod.navigation.RoadPathfinder;
-import com.mojang.blurbs.MatrixStack;
+import com.example.gpsmod.navigation.RoadPathfinder;
+import com.mojang.blaze3d.matrix.MatrixStack;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.util.math.BlockPos;
@@ -22,9 +22,9 @@ public class MapScreen extends Screen {
         this.renderBackground(matrixStack);
         drawCenteredString(matrixStack, this.font, "GPSMOD 1.0.0 — Нажмите ЛКМ для выбора цели", this.width / 2, 15, 0xFFFFFF);
 
-        PlayerEntity player = this.minecraft.player;
+        PlayerEntity player = this.minecraft != null ? this.minecraft.player : null;
         if (player != null) {
-            String coords = String.format("Вы здесь: X: %d, Z: %d", player.getBlockX(), player.getBlockZ());
+            String coords = String.format("Вы здесь: X: %d, Z: %d", player.getX(), player.getZ());
             drawString(matrixStack, this.font, coords, 10, this.height - 20, 0xAAAAAA);
         }
 
@@ -33,20 +33,20 @@ public class MapScreen extends Screen {
 
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
-        if (button == 0 && this.minecraft != null && this.minecraft.player != null) { // ЛКМ
+        if (button == 0 && this.minecraft != null && this.minecraft.player != null) {
             PlayerEntity player = this.minecraft.player;
-            // Простая проекция клика в координаты мира вокруг игрока
-            int targetX = player.getBlockX() + (int) ((mouseX - (this.width / 2.0)) * 2);
-            int targetZ = player.getBlockZ() + (int) ((mouseY - (this.height / 2.0)) * 2);
 
-            BlockPos targetPos = new BlockPos(targetX, player.getBlockY(), targetZ);
+            int targetX = (int) player.getX() + (int) ((mouseX - (this.width / 2.0)) * 2);
+            int targetZ = (int) player.getZ() + (int) ((mouseY - (this.height / 2.0)) * 2);
+
+            BlockPos targetPos = new BlockPos(targetX, player.getY(), targetZ);
             currentPath = RoadPathfinder.findPath(player.level, player.blockPosition(), targetPos);
 
-            if (!currentPath.isEmpty()) {
-                player.displayClientMessage(new StringTextComponent("§a[GPSMOD]: Маршрут успешно проложен!"), false);
+            if (currentPath != null && !currentPath.isEmpty()) {
+                player.displayClientMessage(new StringTextComponent("§a[GPSMOD]: Маршрут проложен!"), false);
                 this.onClose();
             } else {
-                player.displayClientMessage(new StringTextComponent("§c[GPSMOD]: Ошибка! Дорога не найдена."), false);
+                player.displayClientMessage(new StringTextComponent("§c[GPSMOD]: Дорога не найдена!"), false);
             }
             return true;
         }

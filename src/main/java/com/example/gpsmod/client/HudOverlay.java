@@ -1,8 +1,8 @@
-package com.gpsmod.client;
+package com.example.gpsmod.client;
 
-import com.gpsmod.assistant.CopilotManager;
-import com.gpsmod.init.KeyBindings;
-import com.gpsmod.navigation.RoadPathfinder;
+import com.example.gpsmod.assistant.CopilotManager;
+import com.example.gpsmod.init.KeyBindings;
+import com.example.gpsmod.navigation.RoadPathfinder;
 import com.mojang.blaze3d.matrix.MatrixStack;
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.player.PlayerEntity;
@@ -43,14 +43,12 @@ public class HudOverlay {
 
         MatrixStack matrix = event.getMatrixStack();
 
-        // Считываем параметры движения
         double vx = player.getDeltaMovement().x;
         double vz = player.getDeltaMovement().z;
-        double speed = Math.sqrt(vx * vx + vz * vz) * 20; // блоков в секунду
+        double speed = Math.sqrt(vx * vx + vz * vz) * 20;
 
         boolean isOnRoad = RoadPathfinder.findRoadBlockUnder(player.level, player.blockPosition()) != null;
 
-        // Рисуем панель Route Advisor в левом верхнем углу
         mc.font.draw(matrix, "§b[ GPSMOD 1.0.0 — Advisor ]", 10, 10, 0xFFFFFF);
         mc.font.draw(matrix, String.format("Скорость: %.1f б/с", speed), 10, 22, 0xFFFFFF);
         mc.font.draw(matrix, "Покрытие: " + (isOnRoad ? "§aЖелезо" : "§cБездорожье"), 10, 34, 0xFFFFFF);
@@ -63,7 +61,6 @@ public class HudOverlay {
             mc.font.draw(matrix, String.format("До цели: %.0f м", remainingBlocks), 10, 46, 0x55FF55);
             mc.font.draw(matrix, "Полоса: [ ⬆️ ] [ ↗️ ]", 10, 58, 0xFFFF55);
 
-            // Обновление логики штурмана
             CopilotManager.update(player, isOnRoad, speed, remainingBlocks);
         } else {
             mc.font.draw(matrix, "Маршрут: Не задан (Клавиша 0)", 10, 46, 0xAAAAAA);

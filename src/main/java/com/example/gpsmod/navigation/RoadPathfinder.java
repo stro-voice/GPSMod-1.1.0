@@ -1,4 +1,4 @@
-package com.gpsmod.navigation;
+package com.example.gpsmod.navigation;
 
 import net.minecraft.block.Blocks;
 import net.minecraft.util.math.BlockPos;
@@ -8,13 +8,12 @@ import java.util.*;
 
 public class RoadPathfinder {
 
-    // Сканируем 4 блока вниз по оси Y под асфальтом/травой
     private static final int SCAN_DEPTH = 4;
 
     public static BlockPos findRoadBlockUnder(World world, BlockPos surfacePos) {
         if (world == null || surfacePos == null) return null;
         for (int dy = 0; dy <= SCAN_DEPTH; dy++) {
-            BlockPos checkPos = surfacePos.down(dy);
+            BlockPos checkPos = surfacePos.below(dy);
             if (world.getBlockState(checkPos).getBlock() == Blocks.IRON_BLOCK) {
                 return checkPos;
             }
@@ -47,9 +46,8 @@ public class RoadPathfinder {
             }
 
             for (int[] dir : directions) {
-                // Проверяем перепад высот дороги в пределах +-1 блока
                 for (int dy = -1; dy <= 1; dy++) {
-                    BlockPos neighborSurface = current.add(dir[0], dy, dir[1]);
+                    BlockPos neighborSurface = current.offset(dir[0], dy, dir[1]);
                     BlockPos neighborRoad = findRoadBlockUnder(world, neighborSurface);
 
                     if (neighborRoad != null && !cameFrom.containsKey(neighborRoad)) {
