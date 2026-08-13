@@ -24,7 +24,7 @@ public class MapScreen extends Screen {
 
         PlayerEntity player = this.minecraft != null ? this.minecraft.player : null;
         if (player != null) {
-            String coords = String.format("Вы здесь: X: %d, Z: %d", player.getX(), player.getZ());
+        mc.font.drawShadow(matrixStack, String.format("До цели: %d м", (int) remainingBlocks), 10, 46, 0x55FF55)
             drawString(matrixStack, this.font, coords, 10, this.height - 20, 0xAAAAAA);
         }
 
