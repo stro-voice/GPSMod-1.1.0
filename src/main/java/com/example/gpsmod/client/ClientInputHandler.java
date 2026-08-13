@@ -3,6 +3,7 @@ package com.example.gpsmod.client;
 import com.example.gpsmod.GPSMod;
 import com.example.gpsmod.GPSManager;
 import net.minecraft.client.Minecraft;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.BlockRayTraceResult;
 import net.minecraft.util.math.RayTraceResult;
 import net.minecraftforge.api.distmarker.Dist;
@@ -20,19 +21,20 @@ public class ClientInputHandler {
     public static void onKeyInput(InputEvent.KeyInputEvent event) {
         if (mc.player == null || mc.world == null) return;
 
-        // Клавиша '-' (Минус) — Открывает меню навигатора ETS 2
+        // Клавиша '-' (Минус) — Открыть меню навигатора
         if (event.getKey() == GLFW.GLFW_KEY_MINUS && event.getAction() == GLFW.GLFW_PRESS) {
             if (mc.currentScreen == null) {
                 mc.displayGuiScreen(new GPSNpcUi());
             }
         }
 
-        // Клавиша '=' (Равно) — Проложить маршрут к блоку, на который смотрит игрок
+        // Клавиша '=' (Равно) — Проложить маршрут к блоку
         if (event.getKey() == GLFW.GLFW_KEY_EQUAL && event.getAction() == GLFW.GLFW_PRESS) {
             RayTraceResult ray = mc.objectMouseOver;
             if (ray != null && ray.getType() == RayTraceResult.Type.BLOCK) {
                 BlockRayTraceResult blockRay = (BlockRayTraceResult) ray;
-                GPSManager.getInstance().buildPath(mc.world, mc.player.getPosition(), blockRay.getPos());
+                BlockPos playerPos = new BlockPos(mc.player.getPositionVec());
+                GPSManager.getInstance().buildPath(mc.world, playerPos, blockRay.getPos());
             }
         }
     }

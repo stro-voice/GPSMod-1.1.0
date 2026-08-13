@@ -32,7 +32,6 @@ public class GPSManager {
         this.currentPath.clear();
     }
 
-    // Поиск пути
     public void buildPath(World world, BlockPos start, BlockPos target) {
         currentPath.clear();
         Queue<BlockPos> queue = new LinkedList<>();
@@ -59,14 +58,12 @@ public class GPSManager {
                     BlockState stateBelow = world.getBlockState(neighbor.down());
 
                     if (ironOnlyMode) {
-                        // Проверка на железный блок (сам блок или под ногами)
                         if (state.getBlock() == Blocks.IRON_BLOCK || stateBelow.getBlock() == Blocks.IRON_BLOCK) {
                             parentMap.put(neighbor, current);
                             queue.add(neighbor);
                         }
                     } else {
-                        // Обычный режим (любые блоки, кроме воздуха)
-                        if (!state.isAir()) {
+                        if (state.getBlock() != Blocks.AIR) {
                             parentMap.put(neighbor, current);
                             queue.add(neighbor);
                         }

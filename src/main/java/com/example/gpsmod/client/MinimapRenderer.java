@@ -33,31 +33,29 @@ public class MinimapRenderer {
         int x = screenWidth - MAP_SIZE - 15;
         int y = screenHeight - MAP_SIZE - 15;
 
-        // 1. Рисуем темную полу-3D рамку мини-карты в стиле ETS 2
+        // 1. Рисуем темную рамку в стиле ETS 2
         AbstractGui.fill(matrixStack, x - 3, y - 3, x + MAP_SIZE + 3, y + MAP_SIZE + 3, 0xDD111111);
         AbstractGui.fill(matrixStack, x, y, x + MAP_SIZE, y + MAP_SIZE, 0xFF050505);
 
         // 2. Отрисовка маршрута по железным блокам
         List<BlockPos> path = GPSManager.getInstance().getCurrentPath();
-        BlockPos playerPos = mc.player.getPosition();
+        BlockPos playerPos = new BlockPos(mc.player.getPositionVec());
 
         if (path != null && !path.isEmpty()) {
             for (BlockPos pos : path) {
-                // Вычисляем смещение от игрока на мини-карте
                 int dx = pos.getX() - playerPos.getX();
                 int dz = pos.getZ() - playerPos.getZ();
 
                 int mapX = x + (MAP_SIZE / 2) + dx;
                 int mapY = y + (MAP_SIZE / 2) + dz;
 
-                // Если точка в пределах рамки — рисуем её оранжевым цветом ETS 2
                 if (mapX >= x && mapX < x + MAP_SIZE && mapY >= y && mapY < y + MAP_SIZE) {
                     AbstractGui.fill(matrixStack, mapX - 1, mapY - 1, mapX + 1, mapY + 1, 0xFFFF8C00);
                 }
             }
         }
 
-        // 3. Игрок в центре (синяя стрелочка/точка)
+        // 3. Игрок в центре (синяя точка)
         int centerX = x + (MAP_SIZE / 2);
         int centerY = y + (MAP_SIZE / 2);
         AbstractGui.fill(matrixStack, centerX - 2, centerY - 2, centerX + 2, centerY + 2, 0xFF00AAFF);
