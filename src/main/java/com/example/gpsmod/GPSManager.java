@@ -1,5 +1,6 @@
 package com.example.gpsmod;
 
+import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
@@ -31,7 +32,7 @@ public class GPSManager {
         this.currentPath.clear();
     }
 
-    // Алгоритм поиска пути (A* / Breadth-First Search) строго по железным блокам
+    // Алгоритм поиска пути строго по железным блокам
     public void buildPath(World world, BlockPos start, BlockPos target) {
         currentPath.clear();
         Queue<BlockPos> queue = new LinkedList<>();
@@ -40,7 +41,7 @@ public class GPSManager {
         queue.add(start);
         parentMap.put(start, null);
 
-        int maxSearch = 1000; // Ограничение дистанции во избежание лагов
+        int maxSearch = 1000; // Лимит блоков, чтобы игра не зависала
         boolean found = false;
 
         while (!queue.isEmpty() && maxSearch-- > 0) {
@@ -52,19 +53,20 @@ public class GPSManager {
                 break;
             }
 
-            // Проверяем соседние блоки (Север, Юг, Восток, Запад, Вверх, Вниз)
             for (BlockPos neighbor : getNeighbors(current)) {
                 if (!parentMap.containsKey(neighbor)) {
-                    // ЕСЛИ ВКЛЮЧЕН РЕЖИМ ЖЕЛЕЗА: проверяем, является ли блок железным
+                    BlockState state = world.getBlockState(neighbor);
+                    BlockState stateBelow = world.getBlockState(neighbor.down());
+
+                    // Если включен режим железа — проверяем на блоках железа
                     if (ironOnlyMode) {
-                        if (world.getBlockState(neighbor).getBlock() == Blocks.IRON_BLOCK ||
-                            world.getBlockState(neighbor.down()).getBlock() == Blocks.IRON_BLOCK) {
+                        if (state.getBlock() == Blocks.IRON_BLOCK || stateBelow.getBlock() == Blocks.IRON_BLOCK) {
                             parentMap.put(neighbor, current);
                             queue.add(neighbor);
                         }
                     } else {
-                        // Обычный поиск по любым блокам
-                        if (world.getBlockState(neighbor).isSolid()) {
+                        // Обычный режим
+                        if (state.getMaterial().isSolid()) {
                             parentMap.put(neighbor, current);
                             queue.add(neighbor);
                         }
