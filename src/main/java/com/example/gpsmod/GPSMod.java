@@ -13,6 +13,6 @@ public class GPSMod {
     }
 
     private void setup(final FMLCommonSetupEvent event) {
-        // Инициализация мода
+        // Инициализация
     }
 }

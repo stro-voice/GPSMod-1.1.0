@@ -21,14 +21,14 @@ public class ClientInputHandler {
     public static void onKeyInput(InputEvent.KeyInputEvent event) {
         if (mc.player == null || mc.world == null) return;
 
-        // Клавиша '-' (Минус) — Открыть меню навигатора
+        // Нажатие '-' (Минус) — Открыть меню
         if (event.getKey() == GLFW.GLFW_KEY_MINUS && event.getAction() == GLFW.GLFW_PRESS) {
             if (mc.currentScreen == null) {
                 mc.displayGuiScreen(new GPSNpcUi());
             }
         }
 
-        // Клавиша '=' (Равно) — Проложить маршрут к блоку
+        // Нажатие '=' (Равно) — Маршрут к блоку
         if (event.getKey() == GLFW.GLFW_KEY_EQUAL && event.getAction() == GLFW.GLFW_PRESS) {
             RayTraceResult ray = mc.objectMouseOver;
             if (ray != null && ray.getType() == RayTraceResult.Type.BLOCK) {

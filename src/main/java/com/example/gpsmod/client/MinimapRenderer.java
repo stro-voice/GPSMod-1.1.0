@@ -32,11 +32,11 @@ public class MinimapRenderer {
         int x = screenWidth - MAP_SIZE - 15;
         int y = screenHeight - MAP_SIZE - 15;
 
-        // 1. Рисуем рамку мини-карты
+        // 1. Рамка
         Screen.fill(matrixStack, x - 3, y - 3, x + MAP_SIZE + 3, y + MAP_SIZE + 3, 0xDD111111);
         Screen.fill(matrixStack, x, y, x + MAP_SIZE, y + MAP_SIZE, 0xFF050505);
 
-        // 2. Отрисовка маршрута
+        // 2. Отрисовка пути
         List<BlockPos> path = GPSManager.getInstance().getCurrentPath();
         BlockPos playerPos = new BlockPos(mc.player.getPositionVec());
 
@@ -54,7 +54,7 @@ public class MinimapRenderer {
             }
         }
 
-        // 3. Игрок в центре (синяя точка)
+        // 3. Игрок в центре
         int centerX = x + (MAP_SIZE / 2);
         int centerY = y + (MAP_SIZE / 2);
         Screen.fill(matrixStack, centerX - 2, centerY - 2, centerX + 2, centerY + 2, 0xFF00AAFF);
