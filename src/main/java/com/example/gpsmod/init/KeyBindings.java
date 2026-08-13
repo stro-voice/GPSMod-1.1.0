@@ -18,6 +18,7 @@ public class KeyBindings {
     public static KeyBinding keyEquals;
 
     public static void init() {
+        // Регистрируем клавиши 0, -, =
         keyMenu = new KeyBinding("key.gpsmod.menu", GLFW.GLFW_KEY_0, "key.categories.gpsmod");
         keyMinus = new KeyBinding("key.gpsmod.minus", GLFW.GLFW_KEY_MINUS, "key.categories.gpsmod");
         keyEquals = new KeyBinding("key.gpsmod.equals", GLFW.GLFW_KEY_EQUAL, "key.categories.gpsmod");

@@ -20,25 +20,23 @@ public class RoadPathfinder {
     }
 
     public static PathResult calculatePath(World world, BlockPos start, BlockPos target) {
-        List<BlockPos> path = new ArrayList<>();
-        path.add(start);
+        List<BlockPos> points = new ArrayList<>();
+        points.add(start);
 
-        boolean hasRoad = isIronRoadBelow(world, start) || isIronRoadBelow(world, target);
+        boolean startHasRoad = hasIronRoadBelow(world, start);
+        boolean targetHasRoad = hasIronRoadBelow(world, target);
 
-        if (hasRoad) {
-            // Маршрут по железной дороге
-            path.add(target);
-            return new PathResult(path, false);
-        } else {
-            // Режим БЕЗДОРОЖЬЕ
-            path.add(target);
-            return new PathResult(path, true);
-        }
+        points.add(target);
+
+        // Если под точками нет железных блоков — переключается на БЕЗДОРОЖЬЕ
+        boolean isOffroad = !(startHasRoad || targetHasRoad);
+
+        return new PathResult(points, isOffroad);
     }
 
-    private static boolean isIronRoadBelow(World world, BlockPos pos) {
-        for (int dy = 0; dy <= 4; dy++) {
-            if (world.getBlockState(pos.below(dy)).getBlock() == Blocks.IRON_BLOCK) {
+    private static boolean hasIronRoadBelow(World world, BlockPos pos) {
+        for (int dy = 0; dy <= 5; dy++) {
+            if (world.getBlockState(pos.below(dy)).is(Blocks.IRON_BLOCK)) {
                 return true;
             }
         }
