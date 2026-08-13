@@ -1,33 +1,28 @@
 package com.example.gpsmod;
 
-import com.example.gpsmod.client.WorldScanner;
 import com.example.gpsmod.item.TabletItem;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemGroup;
 import net.minecraftforge.event.RegistryEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
-import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 
-@Mod("gpsmod")
+@Mod(GPSMod.MOD_ID)
 public class GPSMod {
+    public static final String MOD_ID = "gpsmod";
 
-    public static TabletItem TABLET_ITEM = new TabletItem(new Item.Properties().stacksTo(1).tab(ItemGroup.TAB_MISC));
+    // Добавляем Планшет в Креативную вкладку "Разное"
+    public static final TabletItem GPS_TABLET = (TabletItem) new TabletItem(
+            new Item.Properties().stacksTo(1).tab(ItemGroup.TAB_MISC)
+    ).setRegistryName(MOD_ID, "gps_tablet");
 
-    public GPSMod() {
-        FMLJavaModLoadingContext.get().getModEventBus().addListener(this::onClientSetup);
-    }
-
-    private void onClientSetup(FMLClientSetupEvent event) {
-        WorldScanner.init();
-    }
+    public GPSMod() {}
 
     @Mod.EventBusSubscriber(bus = Mod.EventBusSubscriber.Bus.MOD)
     public static class RegistryEvents {
         @SubscribeEvent
         public static void onItemsRegistry(final RegistryEvent.Register<Item> event) {
-            event.getRegistry().register(TABLET_ITEM.setRegistryName("gps_tablet"));
+            event.getRegistry().register(GPS_TABLET);
         }
     }
 }

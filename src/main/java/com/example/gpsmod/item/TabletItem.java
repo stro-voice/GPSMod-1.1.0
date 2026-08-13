@@ -1,6 +1,6 @@
 package com.example.gpsmod.item;
 
-import com.example.gpsmod.client.TabletMenuScreen;
+import com.example.gpsmod.client.TabletListScreen;
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
@@ -18,8 +18,8 @@ public class TabletItem extends Item {
     @Override
     public ActionResult<ItemStack> use(World world, PlayerEntity player, Hand hand) {
         if (world.isClientSide) {
-            // Открываем меню планшета при клике ПКМ
-            Minecraft.getInstance().setScreen(new TabletMenuScreen());
+            // Открывает экран планшета со списком Блоков-Маяков
+            Minecraft.getInstance().setScreen(new TabletListScreen());
         }
         return ActionResult.success(player.getItemInHand(hand));
     }

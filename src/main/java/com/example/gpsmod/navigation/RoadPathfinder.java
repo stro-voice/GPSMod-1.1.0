@@ -3,37 +3,51 @@ package com.example.gpsmod.navigation;
 import net.minecraft.block.Blocks;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
+
 import java.util.ArrayList;
 import java.util.List;
 
 public class RoadPathfinder {
 
-    public static class PathResult {
-        public List<BlockPos> pathPoints;
-        public boolean isOffroad;
+    public static List<BlockPos> activePath = new ArrayList<>();
 
-        public PathResult(List<BlockPos> pathPoints, boolean isOffroad) {
-            this.pathPoints = pathPoints;
-            this.isOffroad = isOffroad;
-        }
-    }
+    public static void calculatePath(World world, BlockPos start, BlockPos target) {
+        activePath.clear();
 
-    public static PathResult calculatePath(World world, BlockPos start, BlockPos target) {
-        List<BlockPos> points = new ArrayList<>();
-        points.add(start);
+        BlockPos current = start;
+        activePath.add(current);
 
-        // Проверяем наличие дорог из железных блоков
-        boolean hasRoad = false;
-        for (int x = -2; x <= 2; x++) {
-            for (int z = -2; z <= 2; z++) {
-                if (world.getBlockState(start.offset(x, -1, z)).is(Blocks.IRON_BLOCK)) {
-                    hasRoad = true;
-                    break;
+        for (int step = 0; step < 200; step++) {
+            if (current.distSqr(target) < 4) {
+                activePath.add(target);
+                break;
+            }
+
+            BlockPos nextStep = null;
+            double bestDist = Double.MAX_VALUE;
+
+            for (int x = -1; x <= 1; x++) {
+                for (int z = -1; z <= 1; z++) {
+                    if (x == 0 && z == 0) continue;
+
+                    BlockPos check = current.offset(x, 0, z);
+                    if (world.getBlockState(check.below()).is(Blocks.IRON_BLOCK) || world.getBlockState(check).is(Blocks.IRON_BLOCK)) {
+                        double dist = check.distSqr(target);
+                        if (dist < bestDist && !activePath.contains(check)) {
+                            bestDist = dist;
+                            nextStep = check;
+                        }
+                    }
                 }
             }
-        }
 
-        points.add(target);
-        return new PathResult(points, !hasRoad);
+            if (nextStep != null) {
+                current = nextStep;
+                activePath.add(current);
+            } else {
+                activePath.add(target);
+                break;
+            }
+        }
     }
 }
