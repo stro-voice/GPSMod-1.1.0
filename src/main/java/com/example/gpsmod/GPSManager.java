@@ -46,7 +46,7 @@ public class GPSManager {
         while (!queue.isEmpty() && maxSearch-- > 0) {
             BlockPos current = queue.poll();
 
-            if (current.withinDistance(target, 2)) {
+            if (current.manhattanDistance(target) <= 2) {
                 target = current;
                 found = true;
                 break;

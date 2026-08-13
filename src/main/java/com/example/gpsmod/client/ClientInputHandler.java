@@ -21,19 +21,19 @@ public class ClientInputHandler {
     public static void onKeyInput(InputEvent.KeyInputEvent event) {
         if (mc.player == null || mc.world == null) return;
 
-        // Нажатие '-' (Минус) — Открыть меню
+        // Клавиша '-'
         if (event.getKey() == GLFW.GLFW_KEY_MINUS && event.getAction() == GLFW.GLFW_PRESS) {
             if (mc.currentScreen == null) {
                 mc.displayGuiScreen(new GPSNpcUi());
             }
         }
 
-        // Нажатие '=' (Равно) — Маршрут к блоку
+        // Клавиша '='
         if (event.getKey() == GLFW.GLFW_KEY_EQUAL && event.getAction() == GLFW.GLFW_PRESS) {
             RayTraceResult ray = mc.objectMouseOver;
             if (ray != null && ray.getType() == RayTraceResult.Type.BLOCK) {
                 BlockRayTraceResult blockRay = (BlockRayTraceResult) ray;
-                BlockPos playerPos = new BlockPos(mc.player.getPositionVec());
+                BlockPos playerPos = mc.player.getPosition();
                 GPSManager.getInstance().buildPath(mc.world, playerPos, blockRay.getPos());
             }
         }

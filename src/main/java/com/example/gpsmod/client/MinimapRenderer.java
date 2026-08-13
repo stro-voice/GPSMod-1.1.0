@@ -4,7 +4,7 @@ import com.example.gpsmod.GPSMod;
 import com.example.gpsmod.GPSManager;
 import com.mojang.blaze3d.matrix.MatrixStack;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.screen.Screen;
+import net.minecraft.client.gui.AbstractGui;
 import net.minecraft.util.math.BlockPos;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.RenderGameOverlayEvent;
@@ -32,13 +32,13 @@ public class MinimapRenderer {
         int x = screenWidth - MAP_SIZE - 15;
         int y = screenHeight - MAP_SIZE - 15;
 
-        // 1. Рамка
-        Screen.fill(matrixStack, x - 3, y - 3, x + MAP_SIZE + 3, y + MAP_SIZE + 3, 0xDD111111);
-        Screen.fill(matrixStack, x, y, x + MAP_SIZE, y + MAP_SIZE, 0xFF050505);
+        // Рамка мини-карты
+        AbstractGui.fill(matrixStack, x - 3, y - 3, x + MAP_SIZE + 3, y + MAP_SIZE + 3, 0xDD111111);
+        AbstractGui.fill(matrixStack, x, y, x + MAP_SIZE, y + MAP_SIZE, 0xFF050505);
 
-        // 2. Отрисовка пути
+        // Отрисовка пути
         List<BlockPos> path = GPSManager.getInstance().getCurrentPath();
-        BlockPos playerPos = new BlockPos(mc.player.getPositionVec());
+        BlockPos playerPos = mc.player.getPosition();
 
         if (path != null && !path.isEmpty()) {
             for (BlockPos pos : path) {
@@ -49,14 +49,14 @@ public class MinimapRenderer {
                 int mapY = y + (MAP_SIZE / 2) + dz;
 
                 if (mapX >= x && mapX < x + MAP_SIZE && mapY >= y && mapY < y + MAP_SIZE) {
-                    Screen.fill(matrixStack, mapX - 1, mapY - 1, mapX + 1, mapY + 1, 0xFFFF8C00);
+                    AbstractGui.fill(matrixStack, mapX - 1, mapY - 1, mapX + 1, mapY + 1, 0xFFFF8C00);
                 }
             }
         }
 
-        // 3. Игрок в центре
+        // Игрок в центре
         int centerX = x + (MAP_SIZE / 2);
         int centerY = y + (MAP_SIZE / 2);
-        Screen.fill(matrixStack, centerX - 2, centerY - 2, centerX + 2, centerY + 2, 0xFF00AAFF);
+        AbstractGui.fill(matrixStack, centerX - 2, centerY - 2, centerX + 2, centerY + 2, 0xFF00AAFF);
     }
 }
