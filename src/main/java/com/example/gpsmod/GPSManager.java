@@ -32,7 +32,7 @@ public class GPSManager {
         this.currentPath.clear();
     }
 
-    // Алгоритм поиска пути строго по железным блокам
+    // Поиск пути
     public void buildPath(World world, BlockPos start, BlockPos target) {
         currentPath.clear();
         Queue<BlockPos> queue = new LinkedList<>();
@@ -41,7 +41,7 @@ public class GPSManager {
         queue.add(start);
         parentMap.put(start, null);
 
-        int maxSearch = 1000; // Лимит блоков, чтобы игра не зависала
+        int maxSearch = 1000;
         boolean found = false;
 
         while (!queue.isEmpty() && maxSearch-- > 0) {
@@ -58,15 +58,15 @@ public class GPSManager {
                     BlockState state = world.getBlockState(neighbor);
                     BlockState stateBelow = world.getBlockState(neighbor.down());
 
-                    // Если включен режим железа — проверяем на блоках железа
                     if (ironOnlyMode) {
+                        // Проверка на железный блок (сам блок или под ногами)
                         if (state.getBlock() == Blocks.IRON_BLOCK || stateBelow.getBlock() == Blocks.IRON_BLOCK) {
                             parentMap.put(neighbor, current);
                             queue.add(neighbor);
                         }
                     } else {
-                        // Обычный режим
-                        if (state.getMaterial().isSolid()) {
+                        // Обычный режим (любые блоки, кроме воздуха)
+                        if (!state.isAir()) {
                             parentMap.put(neighbor, current);
                             queue.add(neighbor);
                         }
@@ -75,7 +75,6 @@ public class GPSManager {
             }
         }
 
-        // Восстанавливаем путь от финиша к старту
         if (found) {
             BlockPos curr = target;
             while (curr != null) {
@@ -86,10 +85,23 @@ public class GPSManager {
     }
 
     private List<BlockPos> getNeighbors(BlockPos pos) {
+        int x = pos.getX();
+        int y = pos.getY();
+        int z = pos.getZ();
+
         return Arrays.asList(
-            pos.north(), pos.south(), pos.east(), pos.west(),
-            pos.north().up(), pos.south().up(), pos.east().up(), pos.west().up(),
-            pos.north().down(), pos.south().down(), pos.east().down(), pos.west().down()
+            new BlockPos(x + 1, y, z),
+            new BlockPos(x - 1, y, z),
+            new BlockPos(x, y, z + 1),
+            new BlockPos(x, y, z - 1),
+            new BlockPos(x + 1, y + 1, z),
+            new BlockPos(x - 1, y + 1, z),
+            new BlockPos(x, y + 1, z + 1),
+            new BlockPos(x, y + 1, z - 1),
+            new BlockPos(x + 1, y - 1, z),
+            new BlockPos(x - 1, y - 1, z),
+            new BlockPos(x, y - 1, z + 1),
+            new BlockPos(x, y - 1, z - 1)
         );
     }
 }
