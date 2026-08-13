@@ -1,71 +1,93 @@
 package com.example.gpsmod;
 
+import net.minecraft.block.Blocks;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.vector.Vector3d;
-import java.util.ArrayList;
-import java.util.List;
+import net.minecraft.world.World;
+
+import java.util.*;
 
 public class GPSManager {
-    private static BlockPos targetPos = null;
-    private static boolean active = false;
+    private static final GPSManager INSTANCE = new GPSManager();
+    private boolean ironOnlyMode = true;
+    private List<BlockPos> currentPath = new ArrayList<>();
 
-    public static void setTarget(BlockPos pos) {
-        targetPos = pos;
-        active = true;
+    public static GPSManager getInstance() {
+        return INSTANCE;
     }
 
-    public static void clearTarget() {
-        targetPos = null;
-        active = false;
+    public boolean isIronOnlyMode() {
+        return ironOnlyMode;
     }
 
-    public static boolean isActive() {
-        return active && targetPos != null;
+    public void setIronOnlyMode(boolean ironOnlyMode) {
+        this.ironOnlyMode = ironOnlyMode;
     }
 
-    public static BlockPos getTargetPos() {
-        return targetPos;
+    public List<BlockPos> getCurrentPath() {
+        return currentPath;
     }
 
-    public static double getDistanceToTarget(Vector3d currentPos) {
-        if (targetPos == null) return 0;
-        return currentPos.distanceTo(new Vector3d(targetPos.getX() + 0.5, targetPos.getY(), targetPos.getZ() + 0.5));
+    public void clearPath() {
+        this.currentPath.clear();
     }
 
-    public static List<Vector3d> getCurrentPath(Vector3d currentPos) {
-        List<Vector3d> path = new ArrayList<>();
-        if (!active || targetPos == null) return path;
+    // Алгоритм поиска пути (A* / Breadth-First Search) строго по железным блокам
+    public void buildPath(World world, BlockPos start, BlockPos target) {
+        currentPath.clear();
+        Queue<BlockPos> queue = new LinkedList<>();
+        Map<BlockPos, BlockPos> parentMap = new HashMap<>();
 
-        path.add(currentPos);
-        Vector3d targetVec = new Vector3d(targetPos.getX() + 0.5, targetPos.getY() + 0.5, targetPos.getZ() + 0.5);
+        queue.add(start);
+        parentMap.put(start, null);
 
-        int steps = 20;
-        for (int i = 1; i <= steps; i++) {
-            double t = (double) i / steps;
-            path.add(currentPos.scale(1 - t).add(targetVec.scale(t)));
+        int maxSearch = 1000; // Ограничение дистанции во избежание лагов
+        boolean found = false;
+
+        while (!queue.isEmpty() && maxSearch-- > 0) {
+            BlockPos current = queue.poll();
+
+            if (current.withinDistance(target, 2)) {
+                target = current;
+                found = true;
+                break;
+            }
+
+            // Проверяем соседние блоки (Север, Юг, Восток, Запад, Вверх, Вниз)
+            for (BlockPos neighbor : getNeighbors(current)) {
+                if (!parentMap.containsKey(neighbor)) {
+                    // ЕСЛИ ВКЛЮЧЕН РЕЖИМ ЖЕЛЕЗА: проверяем, является ли блок железным
+                    if (ironOnlyMode) {
+                        if (world.getBlockState(neighbor).getBlock() == Blocks.IRON_BLOCK ||
+                            world.getBlockState(neighbor.down()).getBlock() == Blocks.IRON_BLOCK) {
+                            parentMap.put(neighbor, current);
+                            queue.add(neighbor);
+                        }
+                    } else {
+                        // Обычный поиск по любым блокам
+                        if (world.getBlockState(neighbor).isSolid()) {
+                            parentMap.put(neighbor, current);
+                            queue.add(neighbor);
+                        }
+                    }
+                }
+            }
         }
-        return path;
+
+        // Восстанавливаем путь от финиша к старту
+        if (found) {
+            BlockPos curr = target;
+            while (curr != null) {
+                currentPath.add(0, curr);
+                curr = parentMap.get(curr);
+            }
+        }
     }
 
-    public static String getTurnInstruction(float playerYaw, Vector3d playerPos) {
-        if (!active || targetPos == null) return "";
-
-        double dx = targetPos.getX() + 0.5 - playerPos.x;
-        double dz = targetPos.getZ() + 0.5 - playerPos.z;
-
-        double targetAngle = Math.toDegrees(Math.atan2(-dx, dz));
-        double diff = (targetAngle - playerYaw) % 360;
-        if (diff < -180) diff += 360;
-        if (diff > 180) diff -= 360;
-
-        if (Math.abs(diff) < 25) {
-            return "↑ Прямо";
-        } else if (diff >= 25 && diff < 115) {
-            return "↱ Поверните направо";
-        } else if (diff <= -25 && diff > -115) {
-            return "↰ Поверните налево";
-        } else {
-            return "↶ Развернитесь";
-        }
+    private List<BlockPos> getNeighbors(BlockPos pos) {
+        return Arrays.asList(
+            pos.north(), pos.south(), pos.east(), pos.west(),
+            pos.north().up(), pos.south().up(), pos.east().up(), pos.west().up(),
+            pos.north().down(), pos.south().down(), pos.east().down(), pos.west().down()
+        );
     }
 }
