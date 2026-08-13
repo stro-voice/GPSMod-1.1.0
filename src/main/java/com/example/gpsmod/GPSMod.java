@@ -1,6 +1,5 @@
 package com.example.gpsmod;
 
-import com.example.gpsmod.block.ModBlocks;
 import com.example.gpsmod.item.ModItems;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.fml.common.Mod;
@@ -12,9 +11,6 @@ public class GPSMod {
 
     public GPSMod() {
         IEventBus modEventBus = FMLJavaModLoadingContext.get().getModEventBus();
-
-        // Регистрируем блоки и предметы в Forge
-        ModBlocks.BLOCKS.register(modEventBus);
         ModItems.ITEMS.register(modEventBus);
     }
 }
