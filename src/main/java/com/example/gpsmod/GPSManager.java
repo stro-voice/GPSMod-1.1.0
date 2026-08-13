@@ -29,8 +29,20 @@ public class GPSManager {
         this.lastTurnMessage = "";
     }
 
-    // 1. Создание маршрута + Сообщение "Маршрут построен"
-    public void buildSmartPath(World world, BlockPos startPos) {
+    // Сканирование: видит железный блок под ЛЮБЫМИ блоками дорожного покрытия из модов (до 4 блоков вниз)
+    public static boolean isRoadBlock(World world, BlockPos pos) {
+        for (int dy = 0; dy >= -4; dy--) {
+            BlockPos checkPos = pos.offset(0, dy, 0);
+            BlockState state = world.getBlockState(checkPos);
+            if (state.getBlock() == Blocks.IRON_BLOCK) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    // Построение пути по железным блокам к выбранной точке
+    public void buildSmartPathToTarget(World world, BlockPos startPos, BlockPos target) {
         clearPath();
         Queue<BlockPos> queue = new LinkedList<>();
         Map<BlockPos, BlockPos> parentMap = new HashMap<>();
@@ -38,19 +50,21 @@ public class GPSManager {
         queue.add(startPos);
         parentMap.put(startPos, null);
 
-        int maxSearch = 3000;
-        BlockPos bestEndPos = startPos;
+        int maxSearch = 8000;
+        boolean found = false;
 
         while (!queue.isEmpty() && maxSearch-- > 0) {
             BlockPos current = queue.poll();
-            bestEndPos = current;
+
+            if (current.closerThan(target, 4.0)) {
+                this.targetPos = current;
+                found = true;
+                break;
+            }
 
             for (BlockPos neighbor : getRoadNeighbors(current)) {
                 if (!parentMap.containsKey(neighbor)) {
-                    BlockState state = world.getBlockState(neighbor);
-                    BlockState stateBelow = world.getBlockState(neighbor.below());
-
-                    if (state.getBlock() == Blocks.IRON_BLOCK || stateBelow.getBlock() == Blocks.IRON_BLOCK) {
+                    if (isRoadBlock(world, neighbor)) {
                         parentMap.put(neighbor, current);
                         queue.add(neighbor);
                     }
@@ -58,33 +72,39 @@ public class GPSManager {
             }
         }
 
-        this.targetPos = bestEndPos;
+        if (found && targetPos != null) {
+            BlockPos curr = targetPos;
+            while (curr != null) {
+                currentPath.add(0, curr);
+                curr = parentMap.get(curr);
+            }
 
-        BlockPos curr = bestEndPos;
-        while (curr != null) {
-            currentPath.add(0, curr);
-            curr = parentMap.get(curr);
-        }
-
-        // Сообщение 1: Маршрут построен
-        Minecraft mc = Minecraft.getInstance();
-        if (mc.player != null && !currentPath.isEmpty()) {
-            mc.player.displayClientMessage(
-                new StringTextComponent("§b[GPS] Маршрут успешно построен! Длина: §e" + currentPath.size() + " §bблоков."), 
-                false
-            );
+            Minecraft mc = Minecraft.getInstance();
+            if (mc.player != null) {
+                mc.player.displayClientMessage(
+                    new StringTextComponent("§b[GPS] Маршрут успешно построен! Длина: §e" + currentPath.size() + " §bблоков."), 
+                    false
+                );
+            }
+        } else {
+            Minecraft mc = Minecraft.getInstance();
+            if (mc.player != null) {
+                mc.player.displayClientMessage(
+                    new StringTextComponent("§c[GPS] Не удалось найти трассу из железных блоков к этой точке!"), 
+                    false
+                );
+            }
         }
     }
 
-    // Проверка тика: сброс при прибытии и оповещения о поворотах
     public void tick(BlockPos playerPos) {
         if (targetPos == null || currentPath.isEmpty()) return;
 
         Minecraft mc = Minecraft.getInstance();
         if (mc.player == null) return;
 
-        // Сообщение 2: Вы прибыли в пункт назначения
-        if (playerPos.closerThan(targetPos, 3.0)) {
+        // Авто-сброс при прибытии в пункт назначения
+        if (playerPos.closerThan(targetPos, 4.0)) {
             mc.player.displayClientMessage(
                 new StringTextComponent("§a[GPS] Вы прибыли в пункт назначения!"), 
                 true
@@ -93,12 +113,11 @@ public class GPSManager {
             return;
         }
 
-        // Сообщение 3: Оповещение о поворотах
         checkTurnAnnouncements(playerPos, mc);
     }
 
     private void checkTurnAnnouncements(BlockPos playerPos, Minecraft mc) {
-        if (currentPath.size() < 10) return;
+        if (currentPath.size() < 12) return;
 
         int closestIndex = 0;
         double minDist = Double.MAX_VALUE;
@@ -110,10 +129,10 @@ public class GPSManager {
             }
         }
 
-        if (closestIndex + 10 < currentPath.size()) {
+        if (closestIndex + 12 < currentPath.size()) {
             BlockPos p1 = currentPath.get(closestIndex);
-            BlockPos p2 = currentPath.get(closestIndex + 5);
-            BlockPos p3 = currentPath.get(closestIndex + 10);
+            BlockPos p2 = currentPath.get(closestIndex + 6);
+            BlockPos p3 = currentPath.get(closestIndex + 12);
 
             int dx1 = p2.getX() - p1.getX();
             int dz1 = p2.getZ() - p1.getZ();
@@ -123,10 +142,10 @@ public class GPSManager {
             int crossProduct = dx1 * dz2 - dz1 * dx2;
 
             String currentTurn = "";
-            if (crossProduct > 0) {
-                currentTurn = "§eЧерез 10 блоков поворот направо! ↱";
-            } else if (crossProduct < 0) {
-                currentTurn = "§eЧерез 10 блоков поворот налево! ↰";
+            if (crossProduct > 2) {
+                currentTurn = "§eЧерез 10-15 блоков поворот направо! ↱";
+            } else if (crossProduct < -2) {
+                currentTurn = "§eЧерез 10-15 блоков поворот налево! ↰";
             }
 
             if (!currentTurn.isEmpty() && !currentTurn.equals(lastTurnMessage)) {
@@ -136,13 +155,14 @@ public class GPSManager {
         }
     }
 
+    // Соседи с поддержкой диагоналей для широких дорог
     private List<BlockPos> getRoadNeighbors(BlockPos pos) {
         int x = pos.getX(), y = pos.getY(), z = pos.getZ();
         return Arrays.asList(
             new BlockPos(x + 1, y, z), new BlockPos(x - 1, y, z),
             new BlockPos(x, y, z + 1), new BlockPos(x, y, z - 1),
-            new BlockPos(x + 1, y + 1, z), new BlockPos(x - 1, y + 1, z),
-            new BlockPos(x, y + 1, z + 1), new BlockPos(x, y - 1, z - 1)
+            new BlockPos(x + 1, y, z + 1), new BlockPos(x - 1, y, z - 1),
+            new BlockPos(x + 1, y, z - 1), new BlockPos(x - 1, y, z + 1)
         );
     }
 }

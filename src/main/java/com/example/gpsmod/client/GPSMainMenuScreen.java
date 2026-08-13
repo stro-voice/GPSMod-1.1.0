@@ -1,6 +1,5 @@
 package com.example.gpsmod.client;
 
-import com.example.gpsmod.GPSManager;
 import com.mojang.blaze3d.matrix.MatrixStack;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.button.Button;
@@ -29,12 +28,11 @@ public class GPSMainMenuScreen extends Screen {
                 }
             }));
 
-        // 2. Проложить маршрут
+        // 2. Проложить маршрут (Интерактивный выбор точки мышкой)
         this.addButton(new Button(guiLeft + 15, guiTop + 60, 170, 20,
             new StringTextComponent("2. Проложить маршрут"), (button) -> {
-                if (this.minecraft != null && this.minecraft.player != null) {
-                    GPSManager.getInstance().buildSmartPath(this.minecraft.level, this.minecraft.player.blockPosition());
-                    this.minecraft.setScreen(null);
+                if (this.minecraft != null) {
+                    this.minecraft.setScreen(new RouteSelectionScreen());
                 }
             }));
 
