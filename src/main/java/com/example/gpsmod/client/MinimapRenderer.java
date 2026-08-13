@@ -26,8 +26,8 @@ public class MinimapRenderer {
         }
 
         MatrixStack matrixStack = event.getMatrixStack();
-        int screenWidth = event.getWindow().getScaledWidth();
-        int screenHeight = event.getWindow().getScaledHeight();
+        int screenWidth = event.getWindow().getGuiScaledWidth();
+        int screenHeight = event.getWindow().getGuiScaledHeight();
 
         int x = screenWidth - MAP_SIZE - 15;
         int y = screenHeight - MAP_SIZE - 15;
@@ -38,7 +38,7 @@ public class MinimapRenderer {
 
         // Отрисовка пути
         List<BlockPos> path = GPSManager.getInstance().getCurrentPath();
-        BlockPos playerPos = mc.player.getPosition();
+        BlockPos playerPos = mc.player.blockPosition();
 
         if (path != null && !path.isEmpty()) {
             for (BlockPos pos : path) {

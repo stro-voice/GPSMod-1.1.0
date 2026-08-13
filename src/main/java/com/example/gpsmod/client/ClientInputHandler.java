@@ -19,22 +19,22 @@ public class ClientInputHandler {
 
     @SubscribeEvent
     public static void onKeyInput(InputEvent.KeyInputEvent event) {
-        if (mc.player == null || mc.world == null) return;
+        if (mc.player == null || mc.level == null) return;
 
-        // Клавиша '-'
+        // Нажатие '-'
         if (event.getKey() == GLFW.GLFW_KEY_MINUS && event.getAction() == GLFW.GLFW_PRESS) {
-            if (mc.currentScreen == null) {
-                mc.displayGuiScreen(new GPSNpcUi());
+            if (mc.screen == null) {
+                mc.setScreen(new GPSNpcUi());
             }
         }
 
-        // Клавиша '='
+        // Нажатие '='
         if (event.getKey() == GLFW.GLFW_KEY_EQUAL && event.getAction() == GLFW.GLFW_PRESS) {
-            RayTraceResult ray = mc.objectMouseOver;
+            RayTraceResult ray = mc.hitResult;
             if (ray != null && ray.getType() == RayTraceResult.Type.BLOCK) {
                 BlockRayTraceResult blockRay = (BlockRayTraceResult) ray;
-                BlockPos playerPos = mc.player.getPosition();
-                GPSManager.getInstance().buildPath(mc.world, playerPos, blockRay.getPos());
+                BlockPos playerPos = mc.player.blockPosition();
+                GPSManager.getInstance().buildPath(mc.level, playerPos, blockRay.getBlockPos());
             }
         }
     }

@@ -2,7 +2,6 @@ package com.example.gpsmod.client;
 
 import com.example.gpsmod.GPSManager;
 import com.mojang.blaze3d.matrix.MatrixStack;
-import net.minecraft.client.gui.AbstractGui;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.button.Button;
 import net.minecraft.util.text.StringTextComponent;
@@ -37,7 +36,7 @@ public class GPSNpcUi extends Screen {
             new StringTextComponent("Сбросить маршрут"), (button) -> {
                 GPSManager.getInstance().clearPath();
                 if (this.minecraft != null) {
-                    this.minecraft.displayGuiScreen(null);
+                    this.minecraft.setScreen(null);
                 }
             }));
     }
@@ -46,16 +45,16 @@ public class GPSNpcUi extends Screen {
     public void render(MatrixStack matrixStack, int mouseX, int mouseY, float partialTicks) {
         this.renderBackground(matrixStack);
 
-        AbstractGui.fill(matrixStack, guiLeft, guiTop, guiLeft + xSize, guiTop + ySize, 0xEE1E1E1E);
-        AbstractGui.fill(matrixStack, guiLeft, guiTop, guiLeft + xSize, guiTop + 2, 0xFF555555);
-        AbstractGui.fill(matrixStack, guiLeft, guiTop, guiLeft + 2, guiTop + ySize, 0xFF555555);
-        AbstractGui.fill(matrixStack, guiLeft, guiTop + ySize - 2, guiLeft + xSize, guiTop + ySize, 0xFF111111);
-        AbstractGui.fill(matrixStack, guiLeft + xSize - 2, guiTop, guiLeft + xSize, guiTop + ySize, 0xFF111111);
+        fill(matrixStack, guiLeft, guiTop, guiLeft + xSize, guiTop + ySize, 0xEE1E1E1E);
+        fill(matrixStack, guiLeft, guiTop, guiLeft + xSize, guiTop + 2, 0xFF555555);
+        fill(matrixStack, guiLeft, guiTop, guiLeft + 2, guiTop + ySize, 0xFF555555);
+        fill(matrixStack, guiLeft, guiTop + ySize - 2, guiLeft + xSize, guiTop + ySize, 0xFF111111);
+        fill(matrixStack, guiLeft + xSize - 2, guiTop, guiLeft + xSize, guiTop + ySize, 0xFF111111);
 
-        AbstractGui.fill(matrixStack, guiLeft + 2, guiTop + 2, guiLeft + xSize - 2, guiTop + 25, 0xFF2A2A2A);
+        fill(matrixStack, guiLeft + 2, guiTop + 2, guiLeft + xSize - 2, guiTop + 25, 0xFF2A2A2A);
         
         if (this.font != null) {
-            this.font.drawString(matrixStack, "Mobile Route Advisor", guiLeft + 10, guiTop + 9, 0xFFFFA500);
+            this.font.draw(matrixStack, "Mobile Route Advisor", guiLeft + 10, guiTop + 9, 0xFFFFA500);
         }
 
         super.render(matrixStack, mouseX, mouseY, partialTicks);

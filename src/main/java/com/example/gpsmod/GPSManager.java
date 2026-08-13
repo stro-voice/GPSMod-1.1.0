@@ -46,7 +46,7 @@ public class GPSManager {
         while (!queue.isEmpty() && maxSearch-- > 0) {
             BlockPos current = queue.poll();
 
-            if (current.manhattanDistance(target) <= 2) {
+            if (current.closerThan(target, 2)) {
                 target = current;
                 found = true;
                 break;
@@ -55,7 +55,7 @@ public class GPSManager {
             for (BlockPos neighbor : getNeighbors(current)) {
                 if (!parentMap.containsKey(neighbor)) {
                     BlockState state = world.getBlockState(neighbor);
-                    BlockState stateBelow = world.getBlockState(neighbor.down());
+                    BlockState stateBelow = world.getBlockState(neighbor.below());
 
                     if (ironOnlyMode) {
                         if (state.getBlock() == Blocks.IRON_BLOCK || stateBelow.getBlock() == Blocks.IRON_BLOCK) {
@@ -63,7 +63,7 @@ public class GPSManager {
                             queue.add(neighbor);
                         }
                     } else {
-                        if (state.getBlock() != Blocks.AIR) {
+                        if (!state.isAir()) {
                             parentMap.put(neighbor, current);
                             queue.add(neighbor);
                         }
