@@ -14,13 +14,14 @@ import java.util.List;
 
 public class GPSBeaconBlock extends Block {
 
-    // Список всех поставленных блоков в мире
+    // Список всех поставленных Маяков в мире
     public static final List<BlockPos> BEACONS = new ArrayList<>();
 
     public GPSBeaconBlock() {
         super(AbstractBlock.Properties.of(Material.METAL)
                 .strength(3.0F)
-                .sound(SoundType.METAL));
+                .sound(SoundType.METAL)
+                .noOcclusion()); // noOcclusion нужен для корректного рендера 3D модели
     }
 
     @Override
