@@ -1,4 +1,4 @@
-package com.gpsmod.assistant;
+package com.example.gpsmod.assistant;
 
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.util.text.StringTextComponent;
@@ -9,7 +9,7 @@ public class CopilotManager {
 
     public static void update(PlayerEntity player, boolean isOnRoad, double speedBlocksPerSec, double distanceToFinish) {
         long now = System.currentTimeMillis();
-        if (now - lastMessageTime < 3500) return; // Интервал предупреждений
+        if (now - lastMessageTime < 3500) return;
 
         if (distanceToFinish > 0 && distanceToFinish < 15) {
             notify(player, "§a[GPS-Штурман]:§f Вы приближаетесь к пункту назначения!");

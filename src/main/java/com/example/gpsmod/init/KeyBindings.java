@@ -1,4 +1,4 @@
-package com.gpsmod.init;
+package com.example.gpsmod.init;
 
 import net.minecraft.client.settings.KeyBinding;
 import net.minecraftforge.fml.client.registry.ClientRegistry;
@@ -10,7 +10,6 @@ public class KeyBindings {
     public static KeyBinding resetPathKey;
 
     public static void init() {
-        // Убраны клавиши ZOOMIN / ZOOMOUT
         openMapKey = new KeyBinding("key.gpsmod.open_map", GLFW.GLFW_KEY_0, "GPSMOD 1.0.0");
         toggleHudKey = new KeyBinding("key.gpsmod.toggle_hud", GLFW.GLFW_KEY_MINUS, "GPSMOD 1.0.0");
         resetPathKey = new KeyBinding("key.gpsmod.reset_path", GLFW.GLFW_KEY_EQUAL, "GPSMOD 1.0.0");

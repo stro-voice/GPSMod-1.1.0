@@ -49,21 +49,21 @@ public class HudOverlay {
 
         boolean isOnRoad = RoadPathfinder.findRoadBlockUnder(player.level, player.blockPosition()) != null;
 
-        mc.font.draw(matrix, "§b[ GPSMOD 1.0.0 — Advisor ]", 10, 10, 0xFFFFFF);
-        mc.font.draw(matrix, String.format("Скорость: %.1f б/с", speed), 10, 22, 0xFFFFFF);
-        mc.font.draw(matrix, "Покрытие: " + (isOnRoad ? "§aЖелезо" : "§cБездорожье"), 10, 34, 0xFFFFFF);
+        mc.font.drawShadow(matrix, "§b[ GPSMOD 1.0.0 — Advisor ]", 10, 10, 0xFFFFFF);
+        mc.font.drawShadow(matrix, String.format("Скорость: %.1f б/с", speed), 10, 22, 0xFFFFFF);
+        mc.font.drawShadow(matrix, "Покрытие: " + (isOnRoad ? "§aЖелезо" : "§cБездорожье"), 10, 34, 0xFFFFFF);
 
         if (MapScreen.currentPath != null && !MapScreen.currentPath.isEmpty()) {
             BlockPos target = MapScreen.currentPath.get(MapScreen.currentPath.size() - 1);
             double dist = player.blockPosition().distSqr(target);
             double remainingBlocks = Math.sqrt(dist);
 
-            mc.font.draw(matrix, String.format("До цели: %.0f м", remainingBlocks), 10, 46, 0x55FF55);
-            mc.font.draw(matrix, "Полоса: [ ⬆️ ] [ ↗️ ]", 10, 58, 0xFFFF55);
+            mc.font.drawShadow(matrix, String.format("До цели: %.0f м", remainingBlocks), 10, 46, 0x55FF55);
+            mc.font.drawShadow(matrix, "Полоса: [ ⬆️ ] [ ↗️ ]", 10, 58, 0xFFFF55);
 
             CopilotManager.update(player, isOnRoad, speed, remainingBlocks);
         } else {
-            mc.font.draw(matrix, "Маршрут: Не задан (Клавиша 0)", 10, 46, 0xAAAAAA);
+            mc.font.drawShadow(matrix, "Маршрут: Не задан (Клавиша 0)", 10, 46, 0xAAAAAA);
         }
     }
 }
