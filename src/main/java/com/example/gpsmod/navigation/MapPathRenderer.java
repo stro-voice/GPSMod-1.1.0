@@ -12,7 +12,7 @@ public class MapPathRenderer {
     public static void drawPathOnMap(PlayerEntity player, BlockPos targetPos) {
         ItemStack mapStack = ItemStack.EMPTY;
         
-        // Находим заполненную ванильную карту в инвентаре
+        // Находим ванильную заполненную карту в инвентаре игрока
         for (ItemStack stack : player.inventory.items) {
             if (stack.getItem() == Items.FILLED_MAP) {
                 mapStack = stack;
@@ -22,19 +22,20 @@ public class MapPathRenderer {
 
         if (mapStack.isEmpty()) return;
 
+        // Получаем данные карты
         MapData mapData = FilledMapItem.getSavedData(mapStack, player.level);
         if (mapData == null) return;
 
-        // Конвертируем координаты мира в сетку карты (128x128 пикселей)
+        // В Forge 1.16.5 координаты центра карты хранятся в полях x и z
         int scale = 1 << mapData.scale;
-        int startX = (int) ((player.getX() - mapData.xCenter) / scale) + 64;
-        int startZ = (int) ((player.getZ() - mapData.zCenter) / scale) + 64;
+        int startX = (int) ((player.getX() - mapData.x) / scale) + 64;
+        int startZ = (int) ((player.getZ() - mapData.z) / scale) + 64;
 
-        int endX = (int) ((targetPos.getX() - mapData.xCenter) / scale) + 64;
-        int endZ = (int) ((targetPos.getZ() - mapData.zCenter) / scale) + 64;
+        int endX = (int) ((targetPos.getX() - mapData.x) / scale) + 64;
+        int endZ = (int) ((targetPos.getZ() - mapData.z) / scale) + 64;
 
-        // Рисуем красную линию прямо по пикселям карты
-        drawLine(mapData.colors, startX, startZ, endX, endZ, (byte) 18);
+        // Рисуем линию маршрута по пиксельной сетке карты
+        drawLine(mapData.colors, startX, startZ, endX, endZ, (byte) 18); // 18 - красный цвет
     }
 
     private static void drawLine(byte[] mapColors, int x0, int y0, int x1, int y1, byte color) {
