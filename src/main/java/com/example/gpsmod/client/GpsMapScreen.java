@@ -10,7 +10,7 @@ import net.minecraft.client.gui.widget.button.Button;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.vector.Vector3d;
 import net.minecraft.util.text.StringTextComponent;
-import net.minecraft.world.Heightmap;
+import net.minecraft.world.gen.Heightmap;
 import net.minecraft.world.World;
 
 public class GpsMapScreen extends Screen {
