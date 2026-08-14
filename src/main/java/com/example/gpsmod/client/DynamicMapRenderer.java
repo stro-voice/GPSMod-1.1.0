@@ -52,8 +52,8 @@ public class DynamicMapRenderer {
                     }
                 }
 
-                // 4. КЛЮЧЕВОЙ ШАГ: Принудительно отправляем измененный массив пикселей в GPU-текстуру
-                mc.gameRenderer.getMapItemRenderer().update(mapData);
+                // 4. Принудительно обновляем GPU-текстуру карты
+                mc.gameRenderer.getMapRenderer().update(mapData);
             }
         }
     }
@@ -64,7 +64,6 @@ public class DynamicMapRenderer {
                 int worldX = playerX + (px - 64);
                 int worldZ = playerZ + (pz - 64);
 
-                // Безопасная проверка: загружен ли чанк на клиенте?
                 if (world.hasChunk(worldX >> 4, worldZ >> 4)) {
                     BlockPos topPos = world.getHeightmapPos(Heightmap.Type.WORLD_SURFACE, new BlockPos(worldX, 0, worldZ));
                     if (topPos.getY() > 0) {
@@ -76,7 +75,6 @@ public class DynamicMapRenderer {
                         }
                     }
                 }
-                // Если чанк не загружен — ставим темно-серый фоновый цвет
                 mapData.colors[px + pz * 128] = (byte) 112; 
             }
         }
@@ -92,10 +90,8 @@ public class DynamicMapRenderer {
         int clampedEndX = Math.max(2, Math.min(125, endX));
         int clampedEndZ = Math.max(2, Math.min(125, endZ));
 
-        // Линия красного цвета (код цвета 30 в палитре карт)
         drawLine(mapData.colors, startX, startZ, clampedEndX, clampedEndZ, (byte) 30);
 
-        // Ярко-желтая точка целевого флага
         for (int dx = -1; dx <= 1; dx++) {
             for (int dz = -1; dz <= 1; dz++) {
                 int px = clampedEndX + dx;
