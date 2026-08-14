@@ -27,7 +27,6 @@ public class DynamicMapRenderer {
         if (stack.getItem() == Items.FILLED_MAP) {
             MapData mapData = Items.FILLED_MAP.getSavedData(stack, mc.level);
             if (mapData != null) {
-                // 1. Бесконечное динамическое смещение центра карты вслед за игроком
                 mapData.x = (int) player.getX();
                 mapData.z = (int) player.getZ();
             }
@@ -52,7 +51,6 @@ public class DynamicMapRenderer {
                 double dz = targetZ - player.getZ();
                 int dist = (int) Math.sqrt(dx * dx + dz * dz);
 
-                // Отрисовка текстового указателя маршрута прямо поверх руки с картой
                 mc.font.draw(ms, "🎯 До флага: " + dist + "м.", 10, 10, 0x00FF00);
             }
         }

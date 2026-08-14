@@ -17,11 +17,12 @@ public class ServerEvents {
     @SubscribeEvent
     public static void onRightClickBlock(PlayerInteractEvent.RightClickBlock event) {
         if (!event.getWorld().isClientSide() && event.getItemStack().getItem() == Items.FILLED_MAP) {
-            if (event.getEntityPlayer().isShiftKeyDown()) {
+            PlayerEntity player = event.getPlayer();
+            if (player != null && player.isShiftKeyDown()) {
                 if (event.getWorld().getBlockState(event.getPos()).getBlock() instanceof BannerBlock) {
                     BeaconSavedData data = BeaconSavedData.get(event.getWorld());
                     data.addBeacon(event.getPos());
-                    event.getEntityPlayer().sendMessage(new StringTextComponent("🚩 Флаг зарегистрирован как GPS-маяк!"), event.getEntityPlayer().getUUID());
+                    player.sendMessage(new StringTextComponent("🚩 Флаг зарегистрирован как GPS-маяк!"), player.getUUID());
                     event.setCanceled(true);
                 }
             }
@@ -32,7 +33,7 @@ public class ServerEvents {
     public static void onRightClickItem(PlayerInteractEvent.RightClickItem event) {
         if (event.getWorld().isClientSide() && event.getItemStack().getItem() == Items.FILLED_MAP) {
             PlayerEntity player = event.getPlayer();
-            if (!player.isShiftKeyDown()) {
+            if (player != null && !player.isShiftKeyDown()) {
                 PacketHandler.CHANNEL.sendToServer(new C2SRequestBeaconsPacket());
             }
         }

@@ -17,7 +17,7 @@ public class C2SRequestBeaconsPacket {
         ctx.get().enqueueWork(() -> {
             ServerPlayerEntity player = ctx.get().getSender();
             if (player != null) {
-                BeaconSavedData data = BeaconSavedData.get(player.level);
+                BeaconSavedData data = BeaconSavedData.get(player.getCommandSenderWorld());
                 PacketHandler.CHANNEL.send(PacketDistributor.PLAYER.with(() -> player), new S2CSendBeaconsPacket(data.getBeacons()));
             }
         });
