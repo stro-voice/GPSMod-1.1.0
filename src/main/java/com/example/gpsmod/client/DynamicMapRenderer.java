@@ -3,6 +3,7 @@ package com.example.gpsmod.client;
 import com.mojang.blaze3d.matrix.MatrixStack;
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.item.FilledMapItem;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.nbt.CompoundNBT;
@@ -25,7 +26,7 @@ public class DynamicMapRenderer {
 
         ItemStack stack = player.getMainHandItem();
         if (stack.getItem() == Items.FILLED_MAP) {
-            MapData mapData = Items.FILLED_MAP.getSavedData(stack, mc.level);
+            MapData mapData = FilledMapItem.getSavedData(stack, mc.level);
             if (mapData != null) {
                 mapData.x = (int) player.getX();
                 mapData.z = (int) player.getZ();

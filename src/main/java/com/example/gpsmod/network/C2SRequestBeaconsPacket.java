@@ -3,6 +3,7 @@ package com.example.gpsmod.network;
 import com.example.gpsmod.data.BeaconSavedData;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.network.PacketBuffer;
+import net.minecraft.world.World;
 import net.minecraftforge.fml.network.NetworkEvent;
 import net.minecraftforge.fml.network.PacketDistributor;
 
@@ -10,17 +11,23 @@ import java.util.function.Supplier;
 
 public class C2SRequestBeaconsPacket {
     public C2SRequestBeaconsPacket() {}
+
     public static void encode(C2SRequestBeaconsPacket msg, PacketBuffer buf) {}
-    public static C2SRequestBeaconsPacket decode(PacketBuffer buf) { return new C2SRequestBeaconsPacket(); }
+
+    public static C2SRequestBeaconsPacket decode(PacketBuffer buf) {
+        return new C2SRequestBeaconsPacket();
+    }
 
     public static void handle(C2SRequestBeaconsPacket msg, Supplier<NetworkEvent.Context> ctx) {
-        ctx.get().enqueueWork(() -> {
-            ServerPlayerEntity player = ctx.get().getSender();
+        NetworkEvent.Context context = ctx.get();
+        context.enqueueWork(() -> {
+            ServerPlayerEntity player = context.getSender();
             if (player != null) {
-                BeaconSavedData data = BeaconSavedData.get(player.getCommandSenderWorld());
+                World world = player.getCommandSenderWorld();
+                BeaconSavedData data = BeaconSavedData.get(world);
                 PacketHandler.CHANNEL.send(PacketDistributor.PLAYER.with(() -> player), new S2CSendBeaconsPacket(data.getBeacons()));
             }
         });
-        ctx.get().setPacketHandled(true);
+        context.setPacketHandled(true);
     }
 }

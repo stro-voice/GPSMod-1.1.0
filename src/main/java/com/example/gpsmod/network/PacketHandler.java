@@ -16,19 +16,29 @@ public class PacketHandler {
 
     public static void register() {
         int id = 0;
-        CHANNEL.registerMessage(id++, C2SRequestBeaconsPacket.class, 
-                C2SRequestBeaconsPacket::encode, 
-                C2SRequestBeaconsPacket::decode, 
-                C2SRequestBeaconsPacket::handle);
 
-        CHANNEL.registerMessage(id++, S2CSendBeaconsPacket.class, 
-                S2CSendBeaconsPacket::encode, 
-                S2CSendBeaconsPacket::decode, 
-                S2CSendBeaconsPacket::handle);
+        CHANNEL.registerMessage(
+                id++,
+                C2SRequestBeaconsPacket.class,
+                C2SRequestBeaconsPacket::encode,
+                C2SRequestBeaconsPacket::decode,
+                C2SRequestBeaconsPacket::handle
+        );
 
-        CHANNEL.registerMessage(id++, C2SSelectBeaconPacket.class, 
-                C2SSelectBeaconPacket::encode, 
-                C2SSelectBeaconPacket::decode, 
-                C2SSelectBeaconPacket::handle);
+        CHANNEL.registerMessage(
+                id++,
+                S2CSendBeaconsPacket.class,
+                S2CSendBeaconsPacket::encode,
+                S2CSendBeaconsPacket::decode,
+                S2CSendBeaconsPacket::handle
+        );
+
+        CHANNEL.registerMessage(
+                id++,
+                C2SSelectBeaconPacket.class,
+                C2SSelectBeaconPacket::encode,
+                C2SSelectBeaconPacket::decode,
+                C2SSelectBeaconPacket::handle
+        );
     }
 }
