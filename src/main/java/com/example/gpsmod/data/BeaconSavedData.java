@@ -35,7 +35,7 @@ public class BeaconSavedData extends WorldSavedData {
     }
 
     public List<BlockPos> getBeacons() {
-        return beacons;
+        return this.beacons;
     }
 
     @Override
