@@ -2,10 +2,13 @@ package com.example.gpsmod.event;
 
 import com.example.gpsmod.GPSMod;
 import com.example.gpsmod.data.BeaconSavedData;
+import com.example.gpsmod.network.PacketHandler;
+import com.example.gpsmod.network.S2CSendBeaconsPacket;
 import net.minecraft.block.BannerBlock;
 import net.minecraft.block.Block;
 import net.minecraft.block.WallBannerBlock;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.item.Items;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.StringTextComponent;
@@ -30,7 +33,7 @@ public class ServerEventHandler {
             BlockPos pos = event.getPos();
             Block block = world.getBlockState(pos).getBlock();
 
-            // Проверяем СТРОГО флаги (напольные и настенные баннеры)
+            // Проверяем СТРОГО флаги
             if (block instanceof BannerBlock || block instanceof WallBannerBlock) {
                 BeaconSavedData savedData = BeaconSavedData.get(world);
                 savedData.addBeacon(pos);
@@ -44,6 +47,22 @@ public class ServerEventHandler {
 
                 event.setCanceled(true);
             }
+        }
+    }
+
+    // 2. ПКМ с Компасом отправляет пакет на открытие GUI со списком флагов
+    @SubscribeEvent
+    public static void onRightClickItem(PlayerInteractEvent.RightClickItem event) {
+        World world = event.getWorld();
+        if (world.isClientSide()) return;
+
+        PlayerEntity player = event.getPlayer();
+        if (player != null && event.getItemStack().getItem() == Items.COMPASS) {
+            BeaconSavedData savedData = BeaconSavedData.get(world);
+            PacketHandler.sendToPlayer(
+                new S2CSendBeaconsPacket(savedData.getBeacons()), 
+                (ServerPlayerEntity) player
+            );
         }
     }
 }
