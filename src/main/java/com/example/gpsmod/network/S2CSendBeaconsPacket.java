@@ -35,7 +35,9 @@ public class S2CSendBeaconsPacket {
 
     public static void handle(S2CSendBeaconsPacket msg, Supplier<NetworkEvent.Context> ctx) {
         NetworkEvent.Context context = ctx.get();
-        context.enqueueWork(() -> Minecraft.getInstance().setScreen(new MapBeaconScreen(msg.beacons)));
+        context.enqueueWork(() -> {
+            Minecraft.getInstance().setScreen(new MapBeaconScreen(msg.beacons));
+        });
         context.setPacketHandled(true);
     }
 }

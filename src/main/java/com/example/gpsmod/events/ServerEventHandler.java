@@ -1,4 +1,4 @@
-package com.example.gpsmod.event;
+package com.example.gpsmod.events;
 
 import com.example.gpsmod.GPSMod;
 import com.example.gpsmod.data.BeaconSavedData;
@@ -33,7 +33,6 @@ public class ServerEventHandler {
             BlockPos pos = event.getPos();
             Block block = world.getBlockState(pos).getBlock();
 
-            // Проверяем СТРОГО флаги
             if (block instanceof BannerBlock || block instanceof WallBannerBlock) {
                 BeaconSavedData savedData = BeaconSavedData.get(world);
                 savedData.addBeacon(pos);
@@ -50,7 +49,7 @@ public class ServerEventHandler {
         }
     }
 
-    // 2. ПКМ с Компасом отправляет пакет на открытие GUI со списком флагов
+    // 2. ПКМ с Компасом открывает меню
     @SubscribeEvent
     public static void onRightClickItem(PlayerInteractEvent.RightClickItem event) {
         World world = event.getWorld();

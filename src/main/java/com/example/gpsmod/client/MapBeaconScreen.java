@@ -15,13 +15,11 @@ public class MapBeaconScreen extends Screen {
 
     private final List<BlockPos> beacons;
 
-    // Основной конструктор: принимает список флагов от сервера
     public MapBeaconScreen(List<BlockPos> beacons) {
         super(new StringTextComponent("GPS Меню"));
         this.beacons = beacons != null ? beacons : Collections.emptyList();
     }
 
-    // Дополнительный конструктор по умолчанию
     public MapBeaconScreen() {
         this(Collections.emptyList());
     }
@@ -31,7 +29,6 @@ public class MapBeaconScreen extends Screen {
         super.init();
 
         int y = 40;
-        // Создаем кнопки для каждого сохраненного флага
         for (BlockPos pos : this.beacons) {
             this.addButton(new Button(
                 this.width / 2 - 100, y, 200, 20,
@@ -42,10 +39,9 @@ public class MapBeaconScreen extends Screen {
                 }
             ));
             y += 24;
-            if (y > this.height - 60) break; // Защита от выхода за границы экрана
+            if (y > this.height - 60) break;
         }
 
-        // Кнопка сброса маршрута
         this.addButton(new Button(
             this.width / 2 - 60, this.height - 35, 120, 20,
             new StringTextComponent("Сбросить маршрут"),
