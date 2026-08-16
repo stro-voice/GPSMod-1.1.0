@@ -14,7 +14,7 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 
 @Mod.EventBusSubscriber(modid = GPSMod.MOD_ID, value = Dist.CLIENT)
-public class GPSHudOverlay {
+public class GpsHudOverlay {
 
     // 1. Проверка прибытия в точку каждый тик
     @SubscribeEvent
