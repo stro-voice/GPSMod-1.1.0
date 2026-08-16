@@ -15,13 +15,14 @@ import net.minecraft.util.text.StringTextComponent;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraft.world.World;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
+import net.minecraftforge.event.world.BlockEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 
 @Mod.EventBusSubscriber(modid = GPSMod.MOD_ID, bus = Mod.EventBusSubscriber.Bus.FORGE)
 public class ServerEventHandler {
 
-    // 1. Shift + ПКМ по ФЛАГУ для регистрации
+    // 1. Shift + ПКМ по ФЛАГУ для регистрации в системе
     @SubscribeEvent
     public static void onBlockRightClick(PlayerInteractEvent.RightClickBlock event) {
         World world = event.getWorld();
@@ -33,6 +34,7 @@ public class ServerEventHandler {
             BlockPos pos = event.getPos();
             Block block = world.getBlockState(pos).getBlock();
 
+            // Проверяем строго настенные и обычные флаги
             if (block instanceof BannerBlock || block instanceof WallBannerBlock) {
                 BeaconSavedData savedData = BeaconSavedData.get(world);
                 savedData.addBeacon(pos);
@@ -49,7 +51,35 @@ public class ServerEventHandler {
         }
     }
 
-    // 2. ПКМ с Компасом открывает меню
+    // 2. Уничтожение флага удаляет его координаты из списка GPS
+    @SubscribeEvent
+    public static void onBlockBreak(BlockEvent.BreakEvent event) {
+        World world = (World) event.getWorld();
+        if (world.isClientSide()) return;
+
+        BlockPos pos = event.getPos();
+        Block block = event.getState().getBlock();
+
+        if (block instanceof BannerBlock || block instanceof WallBannerBlock) {
+            BeaconSavedData savedData = BeaconSavedData.get(world);
+            
+            if (savedData.getBeacons().contains(pos)) {
+                savedData.removeBeacon(pos);
+
+                PlayerEntity player = event.getPlayer();
+                if (player != null) {
+                    player.sendMessage(
+                        new StringTextComponent("🗑️ Флаг удален из GPS: ")
+                            .append(new StringTextComponent("X: " + pos.getX() + " Y: " + pos.getY() + " Z: " + pos.getZ())
+                            .withStyle(TextFormatting.RED)),
+                        player.getUUID()
+                    );
+                }
+            }
+        }
+    }
+
+    // 3. ПКМ с Компасом открывает GUI меню со списком доступных точек
     @SubscribeEvent
     public static void onRightClickItem(PlayerInteractEvent.RightClickItem event) {
         World world = event.getWorld();
