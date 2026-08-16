@@ -1,6 +1,7 @@
 package com.example.gpsmod.network;
 
 import com.example.gpsmod.client.MapBeaconScreen;
+import com.example.gpsmod.data.BeaconEntry;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.PacketBuffer;
 import net.minecraft.util.math.BlockPos;
@@ -11,24 +12,27 @@ import java.util.List;
 import java.util.function.Supplier;
 
 public class S2CSendBeaconsPacket {
-    private final List<BlockPos> beacons;
+    private final List<BeaconEntry> beacons;
 
-    public S2CSendBeaconsPacket(List<BlockPos> beacons) {
+    public S2CSendBeaconsPacket(List<BeaconEntry> beacons) {
         this.beacons = beacons;
     }
 
     public static void encode(S2CSendBeaconsPacket msg, PacketBuffer buf) {
         buf.writeInt(msg.beacons.size());
-        for (BlockPos pos : msg.beacons) {
-            buf.writeBlockPos(pos);
+        for (BeaconEntry entry : msg.beacons) {
+            buf.writeBlockPos(entry.getPos());
+            buf.writeUtf(entry.getName());
         }
     }
 
     public static S2CSendBeaconsPacket decode(PacketBuffer buf) {
         int size = buf.readInt();
-        List<BlockPos> list = new ArrayList<>();
+        List<BeaconEntry> list = new ArrayList<>();
         for (int i = 0; i < size; i++) {
-            list.add(buf.readBlockPos());
+            BlockPos pos = buf.readBlockPos();
+            String name = buf.readUtf(32767);
+            list.add(new BeaconEntry(pos, name));
         }
         return new S2CSendBeaconsPacket(list);
     }

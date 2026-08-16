@@ -1,11 +1,11 @@
 package com.example.gpsmod.client;
 
+import com.example.gpsmod.data.BeaconEntry;
 import com.example.gpsmod.network.C2SSelectBeaconPacket;
 import com.example.gpsmod.network.PacketHandler;
 import com.mojang.blaze3d.matrix.MatrixStack;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.button.Button;
-import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.StringTextComponent;
 
 import java.util.Collections;
@@ -13,9 +13,9 @@ import java.util.List;
 
 public class MapBeaconScreen extends Screen {
 
-    private final List<BlockPos> beacons;
+    private final List<BeaconEntry> beacons;
 
-    public MapBeaconScreen(List<BlockPos> beacons) {
+    public MapBeaconScreen(List<BeaconEntry> beacons) {
         super(new StringTextComponent("GPS Меню"));
         this.beacons = beacons != null ? beacons : Collections.emptyList();
     }
@@ -29,12 +29,13 @@ public class MapBeaconScreen extends Screen {
         super.init();
 
         int y = 40;
-        for (BlockPos pos : this.beacons) {
+        for (BeaconEntry entry : this.beacons) {
+            String buttonText = "🚩 " + entry.getName() + " (" + entry.getPos().getX() + ", " + entry.getPos().getZ() + ")";
             this.addButton(new Button(
-                this.width / 2 - 100, y, 200, 20,
-                new StringTextComponent("🚩 X: " + pos.getX() + " | Y: " + pos.getY() + " | Z: " + pos.getZ()),
+                this.width / 2 - 110, y, 220, 20,
+                new StringTextComponent(buttonText),
                 (button) -> {
-                    PacketHandler.sendToServer(new C2SSelectBeaconPacket(pos));
+                    PacketHandler.sendToServer(new C2SSelectBeaconPacket(entry.getPos()));
                     this.onClose();
                 }
             ));

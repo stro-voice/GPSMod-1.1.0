@@ -1,36 +1,54 @@
 package com.example.gpsmod.network;
 
-import com.example.gpsmod.client.ClientGpsState;
+import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.network.PacketBuffer;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.text.StringTextComponent;
+import net.minecraft.util.text.TextFormatting;
 import net.minecraftforge.fml.network.NetworkEvent;
 
 import java.util.function.Supplier;
 
 public class C2SSelectBeaconPacket {
-    private final BlockPos target;
+    private final BlockPos targetPos;
 
-    public C2SSelectBeaconPacket(BlockPos target) {
-        this.target = target;
+    public C2SSelectBeaconPacket(BlockPos targetPos) {
+        this.targetPos = targetPos;
     }
 
     public static void encode(C2SSelectBeaconPacket msg, PacketBuffer buf) {
-        buf.writeBoolean(msg.target != null);
-        if (msg.target != null) {
-            buf.writeBlockPos(msg.target);
+        boolean hasPos = msg.targetPos != null;
+        buf.writeBoolean(hasPos);
+        if (hasPos) {
+            buf.writeBlockPos(msg.targetPos);
         }
     }
 
     public static C2SSelectBeaconPacket decode(PacketBuffer buf) {
-        boolean hasTarget = buf.readBoolean();
-        return new C2SSelectBeaconPacket(hasTarget ? buf.readBlockPos() : null);
+        boolean hasPos = buf.readBoolean();
+        BlockPos pos = hasPos ? buf.readBlockPos() : null;
+        return new C2SSelectBeaconPacket(pos);
     }
 
     public static void handle(C2SSelectBeaconPacket msg, Supplier<NetworkEvent.Context> ctx) {
         NetworkEvent.Context context = ctx.get();
         context.enqueueWork(() -> {
-            // Устанавливает выбранную цель или null при сбросе
-            ClientGpsState.activeTarget = msg.target;
+            ServerPlayerEntity player = context.getSender();
+            if (player != null) {
+                if (msg.targetPos != null) {
+                    player.sendMessage(
+                        new StringTextComponent("🎯 Маршрут установлен на: ")
+                            .append(new StringTextComponent("X: " + msg.targetPos.getX() + " Z: " + msg.targetPos.getZ())
+                            .withStyle(TextFormatting.GREEN)),
+                        player.getUUID()
+                    );
+                } else {
+                    player.sendMessage(
+                        new StringTextComponent("❌ Маршрут сброшен").withStyle(TextFormatting.RED),
+                        player.getUUID()
+                    );
+                }
+            }
         });
         context.setPacketHandled(true);
     }

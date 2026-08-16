@@ -1,12 +1,14 @@
 package com.example.gpsmod.events;
 
 import com.example.gpsmod.GPSMod;
+import com.example.gpsmod.client.FlagNameScreen;
 import com.example.gpsmod.data.BeaconSavedData;
 import com.example.gpsmod.network.PacketHandler;
 import com.example.gpsmod.network.S2CSendBeaconsPacket;
 import net.minecraft.block.BannerBlock;
 import net.minecraft.block.Block;
 import net.minecraft.block.WallBannerBlock;
+import net.minecraft.client.Minecraft;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.item.Items;
@@ -22,36 +24,25 @@ import net.minecraftforge.fml.common.Mod;
 @Mod.EventBusSubscriber(modid = GPSMod.MOD_ID, bus = Mod.EventBusSubscriber.Bus.FORGE)
 public class ServerEventHandler {
 
-    // 1. Shift + ПКМ по ФЛАГУ для регистрации в системе
+    // 1. Shift + ПКМ по флагу — открываем поле ввода имени на клиенте
     @SubscribeEvent
     public static void onBlockRightClick(PlayerInteractEvent.RightClickBlock event) {
-        World world = event.getWorld();
-        if (world.isClientSide()) return;
-
         PlayerEntity player = event.getPlayer();
 
         if (player != null && player.isCrouching()) {
             BlockPos pos = event.getPos();
-            Block block = world.getBlockState(pos).getBlock();
+            Block block = event.getWorld().getBlockState(pos).getBlock();
 
-            // Проверяем строго настенные и обычные флаги
             if (block instanceof BannerBlock || block instanceof WallBannerBlock) {
-                BeaconSavedData savedData = BeaconSavedData.get(world);
-                savedData.addBeacon(pos);
-
-                player.sendMessage(
-                    new StringTextComponent("🚩 Флаг зарегистрирован: ")
-                        .append(new StringTextComponent("X: " + pos.getX() + " Y: " + pos.getY() + " Z: " + pos.getZ())
-                        .withStyle(TextFormatting.GREEN)),
-                    player.getUUID()
-                );
-
+                if (event.getWorld().isClientSide()) {
+                    Minecraft.getInstance().setScreen(new FlagNameScreen(pos));
+                }
                 event.setCanceled(true);
             }
         }
     }
 
-    // 2. Уничтожение флага удаляет его координаты из списка GPS
+    // 2. Ломание флага удаляет его из списка GPS
     @SubscribeEvent
     public static void onBlockBreak(BlockEvent.BreakEvent event) {
         World world = (World) event.getWorld();
@@ -62,24 +53,11 @@ public class ServerEventHandler {
 
         if (block instanceof BannerBlock || block instanceof WallBannerBlock) {
             BeaconSavedData savedData = BeaconSavedData.get(world);
-            
-            if (savedData.getBeacons().contains(pos)) {
-                savedData.removeBeacon(pos);
-
-                PlayerEntity player = event.getPlayer();
-                if (player != null) {
-                    player.sendMessage(
-                        new StringTextComponent("🗑️ Флаг удален из GPS: ")
-                            .append(new StringTextComponent("X: " + pos.getX() + " Y: " + pos.getY() + " Z: " + pos.getZ())
-                            .withStyle(TextFormatting.RED)),
-                        player.getUUID()
-                    );
-                }
-            }
+            savedData.removeBeacon(pos);
         }
     }
 
-    // 3. ПКМ с Компасом открывает GUI меню со списком доступных точек
+    // 3. ПКМ с Компасом открывает меню выбора
     @SubscribeEvent
     public static void onRightClickItem(PlayerInteractEvent.RightClickItem event) {
         World world = event.getWorld();

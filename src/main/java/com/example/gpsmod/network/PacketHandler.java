@@ -20,16 +20,25 @@ public class PacketHandler {
     private static int id = 0;
 
     public static void register() {
+        // 1. Сервер -> Клиент: Отправка списка всех сохраненных флагов
         INSTANCE.messageBuilder(S2CSendBeaconsPacket.class, id++, NetworkDirection.PLAY_TO_CLIENT)
             .encoder(S2CSendBeaconsPacket::encode)
             .decoder(S2CSendBeaconsPacket::decode)
             .consumer(S2CSendBeaconsPacket::handle)
             .add();
 
+        // 2. Клиент -> Сервер: Выбор активной точки для навигатора
         INSTANCE.messageBuilder(C2SSelectBeaconPacket.class, id++, NetworkDirection.PLAY_TO_SERVER)
             .encoder(C2SSelectBeaconPacket::encode)
             .decoder(C2SSelectBeaconPacket::decode)
             .consumer(C2SSelectBeaconPacket::handle)
+            .add();
+
+        // 3. Клиент -> Сервер: Регистрация нового флага с кастомным именем
+        INSTANCE.messageBuilder(C2SRegisterBeaconPacket.class, id++, NetworkDirection.PLAY_TO_SERVER)
+            .encoder(C2SRegisterBeaconPacket::encode)
+            .decoder(C2SRegisterBeaconPacket::decode)
+            .consumer(C2SRegisterBeaconPacket::handle)
             .add();
     }
 
