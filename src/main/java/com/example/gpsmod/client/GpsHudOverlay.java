@@ -17,7 +17,7 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 
 @Mod.EventBusSubscriber(modid = GPSMod.MOD_ID, value = Dist.CLIENT)
-public class GPSHudOverlay {
+public class GpsHudOverlay {
 
     // 1. Проверка авто-завершения маршрута при приближении (менее 3 блоков)
     @SubscribeEvent
@@ -43,7 +43,7 @@ public class GPSHudOverlay {
         }
     }
 
-    // 2. Отрисовка полноценной плашки HUD с фоном, координатами и стрелкой направления
+    // 2. Отрисовка плашки HUD с фоном, координатами и стрелкой направления
     @SubscribeEvent
     public static void onRenderOverlay(RenderGameOverlayEvent.Post event) {
         if (event.getType() != RenderGameOverlayEvent.ElementType.ALL) return;
@@ -53,9 +53,9 @@ public class GPSHudOverlay {
         ClientPlayerEntity player = mc.player;
         if (player == null) return;
 
-        // Показываем HUD если установлен маршрут и компас в руках (или левой руке)
-        boolean hasCompass = player.getHeldItemMainhand().getItem() == Items.COMPASS 
-                          || player.getHeldItemOffhand().getItem() == Items.COMPASS;
+        // Проверка компаса в руках (главная или левая рука) для маппингов Mojang
+        boolean hasCompass = player.getMainHandItem().getItem() == Items.COMPASS 
+                          || player.getOffhandItem().getItem() == Items.COMPASS;
 
         if (!hasCompass) return;
 
@@ -66,21 +66,17 @@ public class GPSHudOverlay {
         BlockPos target = ClientGPSData.targetPos;
         int distance = (int) Math.sqrt(player.distanceToSqr(target.getX(), target.getY(), target.getZ()));
 
-        // Вычисление направления стрелки относительно поворота игрока
         String arrow = getDirectionArrow(player, target);
 
-        // Размеры и позиция карточки в правом нижнем углу
         int width = 160;
         int height = 50;
         int x = screenWidth - width - 10;
         int y = screenHeight - height - 10;
 
-        // Отрисовка полупрозрачного фона карточки
+        // Отрисовка полупрозрачного фона и зеленой полосы
         AbstractGui.fill(matrixStack, x, y, x + width, y + height, 0xD0101010);
-        // Зеленая полоса акцента слева
         AbstractGui.fill(matrixStack, x, y, x + 3, y + height, 0xFF55FF55);
 
-        // Текст информации
         String titleText = "📍 " + ClientGPSData.targetName + " " + arrow;
         String distText = "📏 Дистанция: " + distance + "м";
         String posText = "🎯 [X: " + target.getX() + " | Z: " + target.getZ() + "]";
@@ -90,7 +86,6 @@ public class GPSHudOverlay {
         mc.font.draw(matrixStack, posText, x + 8, y + 34, 0xAAAAAA);
     }
 
-    // Расчет стрелки указателя (⬆️, ↗️, ➡️, ↘️, ⬇️, ↙️, ⬅️, ↖️)
     private static String getDirectionArrow(ClientPlayerEntity player, BlockPos target) {
         double dx = target.getX() - player.getX();
         double dz = target.getZ() - player.getZ();
