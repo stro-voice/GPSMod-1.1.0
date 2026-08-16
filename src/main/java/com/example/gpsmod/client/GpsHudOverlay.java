@@ -1,103 +1,73 @@
 package com.example.gpsmod.client;
 
+import com.example.gpsmod.GPSMod;
 import com.mojang.blaze3d.matrix.MatrixStack;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.AbstractGui;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.util.SoundCategory;
-import net.minecraft.util.SoundEvents;
+import net.minecraft.client.entity.player.ClientPlayerEntity;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.text.StringTextComponent;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.RenderGameOverlayEvent;
+import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 
-@Mod.EventBusSubscriber(value = Dist.CLIENT)
-public class GpsHudOverlay {
+@Mod.EventBusSubscriber(modid = GPSMod.MOD_ID, value = Dist.CLIENT)
+public class GPSHudOverlay {
 
+    // 1. Проверка прибытия в точку каждый тик
+    @SubscribeEvent
+    public static void onClientTick(TickEvent.ClientTickEvent event) {
+        if (event.phase != TickEvent.Phase.END) return;
+
+        Minecraft mc = Minecraft.getInstance();
+        if (mc.player == null || ClientGPSData.targetPos == null) return;
+
+        BlockPos playerPos = mc.player.blockPosition();
+        BlockPos targetPos = ClientGPSData.targetPos;
+
+        double dx = playerPos.getX() - targetPos.getX();
+        double dz = playerPos.getZ() - targetPos.getZ();
+        double distanceSq = dx * dx + dz * dz;
+
+        // Если игрок подошел ближе чем на 3 блока по горизонтали
+        if (distanceSq <= 9.0) {
+            mc.player.sendMessage(
+                new StringTextComponent("✅ Вы прибыли в пункт назначения: ")
+                    .append(new StringTextComponent(ClientGPSData.targetName).withStyle(TextFormatting.GREEN)),
+                mc.player.getUUID()
+            );
+            ClientGPSData.clearTarget();
+        }
+    }
+
+    // 2. Отрисовка HUD строго в правом нижнем углу
     @SubscribeEvent
     public static void onRenderOverlay(RenderGameOverlayEvent.Post event) {
         if (event.getType() != RenderGameOverlayEvent.ElementType.ALL) return;
+        if (ClientGPSData.targetPos == null) return;
 
         Minecraft mc = Minecraft.getInstance();
-        PlayerEntity player = mc.player;
-        if (player == null || ClientGpsState.activeTarget == null) return;
+        ClientPlayerEntity player = mc.player;
+        if (player == null) return;
 
-        BlockPos target = ClientGpsState.activeTarget;
-
-        double dx = target.getX() - player.getX();
-        double dz = target.getZ() - player.getZ();
-        int distance = (int) Math.sqrt(dx * dx + dz * dz);
-
-        // АВТО-СБРОС И ЗВУК ПРИ ПРИБЫТИИ (<= 3 блоков)
-        if (distance <= 3) {
-            ClientGpsState.activeTarget = null;
-            
-            player.sendMessage(
-                new StringTextComponent("🏁 Вы прибыли в пункт назначения!")
-                    .withStyle(TextFormatting.GOLD, TextFormatting.BOLD),
-                player.getUUID()
-            );
-            
-            if (mc.level != null) {
-                mc.level.playSound(player, player.blockPosition(), SoundEvents.PLAYER_LEVELUP, SoundCategory.PLAYERS, 1.0F, 1.0F);
-            }
-            return;
-        }
-
-        double targetAngle = Math.toDegrees(Math.atan2(dz, dx)) - 90.0;
-        double relativeAngle = MathHelper.wrapDegrees(targetAngle - player.yRot);
-
-        renderGpsPanel(event.getMatrixStack(), mc, distance, target.getX(), target.getZ(), relativeAngle);
-    }
-
-    private static void renderGpsPanel(MatrixStack matrix, Minecraft mc, int distance, int targetX, int targetZ, double angle) {
+        MatrixStack matrixStack = event.getMatrixStack();
         int screenWidth = mc.getWindow().getGuiScaledWidth();
         int screenHeight = mc.getWindow().getGuiScaledHeight();
-        
-        int width = 130;
-        int height = 50;
 
-        // ПРАВЫЙ НИЖНИЙ УГОЛ
-        int x = screenWidth - width - 10;
-        int y = screenHeight - height - 10;
+        BlockPos target = ClientGPSData.targetPos;
+        int distance = (int) Math.sqrt(player.distanceToSqr(target.getX(), target.getY(), target.getZ()));
 
-        // Фон
-        AbstractGui.fill(matrix, x, y, x + width, y + height, 0xDD0F172A);
-        // Неоновые рамки
-        AbstractGui.fill(matrix, x, y, x + width, y + 2, 0xFF00E5FF);
-        AbstractGui.fill(matrix, x, y + height - 1, x + width, y + height, 0x4400E5FF);
+        String nameText = "📍 " + ClientGPSData.targetName;
+        String distText = "📏 Дистанция: " + distance + "m";
+        String posText = "🎯 X: " + target.getX() + " Z: " + target.getZ();
 
-        // Заголовок
-        mc.font.draw(matrix, new StringTextComponent("● ").withStyle(TextFormatting.GREEN)
-                .append(new StringTextComponent("GPS NAVIGATOR").withStyle(TextFormatting.BOLD, TextFormatting.WHITE)), 
-                x + 8, y + 6, 0xFFFFFFFF);
+        int x = screenWidth - 150;
+        int y = screenHeight - 45;
 
-        // Стрелка и дистанция
-        String directionArrow = getArrowSymbol(angle);
-        String distText = distance + " м";
-        mc.font.draw(matrix, new StringTextComponent(directionArrow + " ").withStyle(TextFormatting.AQUA)
-                .append(new StringTextComponent(distText).withStyle(TextFormatting.YELLOW, TextFormatting.BOLD)), 
-                x + 10, y + 20, 0xFFFFFFFF);
-
-        // Координаты цели
-        String coordsText = "X: " + targetX + " | Z: " + targetZ;
-        mc.font.draw(matrix, new StringTextComponent(coordsText).withStyle(TextFormatting.GRAY), 
-                x + 10, y + 34, 0xFFAAAAAA);
-    }
-
-    private static String getArrowSymbol(double angle) {
-        if (angle >= -22.5 && angle < 22.5) return "⬆ ПРЯМО";
-        if (angle >= 22.5 && angle < 67.5) return "↗ ПРАВЕЕ";
-        if (angle >= 67.5 && angle < 112.5) return "➡ ВПРАВО";
-        if (angle >= 112.5 && angle < 157.5) return "↘ НАЗАД-ПРАВО";
-        if (angle >= 157.5 || angle < -157.5) return "⬇ НАЗАД";
-        if (angle >= -157.5 && angle < -112.5) return "↙ НАЗАД-ЛЕВО";
-        if (angle >= -112.5 && angle < -67.5) return "⬅ ВЛЕВО";
-        if (angle >= -67.5 && angle < -22.5) return "↖ ЛЕВЕЕ";
-        return "⬆";
+        mc.font.draw(matrixStack, nameText, x, y, 0xFFFF55);
+        mc.font.draw(matrixStack, distText, x, y + 10, 0xFFFFFF);
+        mc.font.draw(matrixStack, posText, x, y + 20, 0xAAAAAA);
     }
 }

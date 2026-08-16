@@ -35,6 +35,8 @@ public class MapBeaconScreen extends Screen {
                 this.width / 2 - 110, y, 220, 20,
                 new StringTextComponent(buttonText),
                 (button) -> {
+                    // Устанавливаем цель локально на клиенте
+                    ClientGPSData.setTarget(entry.getPos(), entry.getName());
                     PacketHandler.sendToServer(new C2SSelectBeaconPacket(entry.getPos()));
                     this.onClose();
                 }
@@ -47,6 +49,8 @@ public class MapBeaconScreen extends Screen {
             this.width / 2 - 60, this.height - 35, 120, 20,
             new StringTextComponent("Сбросить маршрут"),
             (button) -> {
+                // Очищаем цель
+                ClientGPSData.clearTarget();
                 PacketHandler.sendToServer(new C2SSelectBeaconPacket(null));
                 this.onClose();
             }
