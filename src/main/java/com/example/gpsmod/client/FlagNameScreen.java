@@ -14,30 +14,36 @@ public class FlagNameScreen extends Screen {
     private TextFieldWidget nameField;
 
     public FlagNameScreen(BlockPos pos) {
-        super(new StringTextComponent("Название флага"));
+        super(new StringTextComponent("Введите название флага"));
         this.pos = pos;
     }
 
     @Override
     protected void init() {
         super.init();
-        this.minecraft.keyboardListener.enableRepeatEvents(true);
+        
+        if (this.minecraft != null) {
+            this.minecraft.keyboardHandler.setSendRepeatsToGui(true);
+        }
 
         this.nameField = new TextFieldWidget(
             this.font, this.width / 2 - 100, this.height / 2 - 10, 200, 20,
             new StringTextComponent("Имя флага")
         );
-        this.nameField.setMaxStringLength(24);
+        this.nameField.setMaxLength(24);
         this.nameField.setValue("Точка " + pos.getX() + ", " + pos.getZ());
+        
         this.children.add(this.nameField);
-        this.setFocusedDefault(this.nameField);
+        this.setFocused(this.nameField);
 
         this.addButton(new Button(
             this.width / 2 - 50, this.height / 2 + 20, 100, 20,
             new StringTextComponent("Сохранить"),
             (button) -> {
-                String name = this.nameField.getText().trim();
-                if (name.isEmpty()) name = "Флаг " + pos.getX() + ", " + pos.getZ();
+                String name = this.nameField.getValue().trim();
+                if (name.isEmpty()) {
+                    name = "Флаг " + pos.getX() + ", " + pos.getZ();
+                }
                 PacketHandler.sendToServer(new C2SRegisterBeaconPacket(pos, name));
                 this.onClose();
             }
@@ -46,14 +52,16 @@ public class FlagNameScreen extends Screen {
 
     @Override
     public void onClose() {
-        this.minecraft.keyboardListener.enableRepeatEvents(false);
+        if (this.minecraft != null) {
+            this.minecraft.keyboardHandler.setSendRepeatsToGui(false);
+        }
         super.onClose();
     }
 
     @Override
     public void render(MatrixStack matrixStack, int mouseX, int mouseY, float partialTicks) {
         this.renderBackground(matrixStack);
-        drawCenteredString(matrixStack, this.font, "Введите название флага:", this.width / 2, this.height / 2 - 35, 0xFFFFFFFF);
+        drawCenteredString(matrixStack, this.font, this.title, this.width / 2, this.height / 2 - 35, 0xFFFFFFFF);
         this.nameField.render(matrixStack, mouseX, mouseY, partialTicks);
         super.render(matrixStack, mouseX, mouseY, partialTicks);
     }
