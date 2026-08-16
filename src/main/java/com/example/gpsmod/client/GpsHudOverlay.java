@@ -5,7 +5,6 @@ import com.mojang.blaze3d.matrix.MatrixStack;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.player.ClientPlayerEntity;
 import net.minecraft.client.gui.AbstractGui;
-import net.minecraft.item.Items;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.text.StringTextComponent;
@@ -43,21 +42,15 @@ public class GpsHudOverlay {
         }
     }
 
-    // 2. Отрисовка плашки HUD с фоном, координатами и стрелкой направления
+    // 2. Отрисовка плашки HUD всегда, пока есть активный маршрут
     @SubscribeEvent
     public static void onRenderOverlay(RenderGameOverlayEvent.Post event) {
         if (event.getType() != RenderGameOverlayEvent.ElementType.ALL) return;
-        if (ClientGPSData.targetPos == null) return;
+        if (ClientGPSData.targetPos == null) return; // Виджет виден постоянно до сброса или прибытия
 
         Minecraft mc = Minecraft.getInstance();
         ClientPlayerEntity player = mc.player;
         if (player == null) return;
-
-        // Проверка компаса в руках (главная или левая рука) для маппингов Mojang
-        boolean hasCompass = player.getMainHandItem().getItem() == Items.COMPASS 
-                          || player.getOffhandItem().getItem() == Items.COMPASS;
-
-        if (!hasCompass) return;
 
         MatrixStack matrixStack = event.getMatrixStack();
         int screenWidth = mc.getWindow().getGuiScaledWidth();
@@ -73,7 +66,7 @@ public class GpsHudOverlay {
         int x = screenWidth - width - 10;
         int y = screenHeight - height - 10;
 
-        // Отрисовка полупрозрачного фона и зеленой полосы
+        // Отрисовка полупрозрачного фона и зеленой акцентной полосы
         AbstractGui.fill(matrixStack, x, y, x + width, y + height, 0xD0101010);
         AbstractGui.fill(matrixStack, x, y, x + 3, y + height, 0xFF55FF55);
 
