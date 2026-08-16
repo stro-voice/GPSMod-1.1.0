@@ -1,9 +1,6 @@
 package com.example.gpsmod.network;
 
-import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
-import net.minecraft.nbt.CompoundNBT;
+import com.example.gpsmod.client.ClientGpsState;
 import net.minecraft.network.PacketBuffer;
 import net.minecraft.util.math.BlockPos;
 import net.minecraftforge.fml.network.NetworkEvent;
@@ -32,20 +29,8 @@ public class C2SSelectBeaconPacket {
     public static void handle(C2SSelectBeaconPacket msg, Supplier<NetworkEvent.Context> ctx) {
         NetworkEvent.Context context = ctx.get();
         context.enqueueWork(() -> {
-            ServerPlayerEntity player = context.getSender();
-            if (player != null) {
-                ItemStack map = player.getMainHandItem();
-                if (map.getItem() == Items.FILLED_MAP) {
-                    CompoundNBT tag = map.getOrCreateTag();
-                    if (msg.target != null) {
-                        tag.putInt("TargetX", msg.target.getX());
-                        tag.putInt("TargetZ", msg.target.getZ());
-                        tag.putBoolean("HasGPS", true);
-                    } else {
-                        tag.remove("HasGPS");
-                    }
-                }
-            }
+            // Устанавливает выбранную цель или null при сбросе
+            ClientGpsState.activeTarget = msg.target;
         });
         context.setPacketHandled(true);
     }

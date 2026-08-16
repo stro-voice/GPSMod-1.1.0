@@ -4,9 +4,9 @@ import com.mojang.blaze3d.matrix.MatrixStack;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.AbstractGui;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
-import net.minecraft.nbt.CompoundNBT;
+import net.minecraft.util.SoundCategory;
+import net.minecraft.util.SoundEvents;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.text.StringTextComponent;
 import net.minecraft.util.text.TextFormatting;
@@ -24,61 +24,66 @@ public class GpsHudOverlay {
 
         Minecraft mc = Minecraft.getInstance();
         PlayerEntity player = mc.player;
-        if (player == null) return;
+        if (player == null || ClientGpsState.activeTarget == null) return;
 
-        // ПРОВЕРКА ВТОРОЙ РУКИ (Offhand)
-        ItemStack stack = player.getOffhandItem(); // <-- Карта проверяется во второй руке!
+        BlockPos target = ClientGpsState.activeTarget;
 
-        if (stack.getItem() == Items.FILLED_MAP && stack.hasTag()) {
-            CompoundNBT tag = stack.getTag();
-            if (tag != null && tag.getBoolean("HasGPS")) {
-                int targetX = tag.getInt("TargetX");
-                int targetZ = tag.getInt("TargetZ");
+        double dx = target.getX() - player.getX();
+        double dz = target.getZ() - player.getZ();
+        int distance = (int) Math.sqrt(dx * dx + dz * dz);
 
-                // Вычисляем дистанцию до цели
-                double dx = targetX - player.getX();
-                double dz = targetZ - player.getZ();
-                int distance = (int) Math.sqrt(dx * dx + dz * dz);
-
-                // Вычисляем угол направления относительно взгляда игрока
-                double targetAngle = Math.toDegrees(Math.atan2(dz, dx)) - 90.0;
-                double relativeAngle = MathHelper.wrapDegrees(targetAngle - player.yRot);
-
-                // Отрисовываем интерфейс навигатора
-                renderGpsPanel(event.getMatrixStack(), mc, distance, targetX, targetZ, relativeAngle);
+        // АВТО-СБРОС И ЗВУК ПРИ ПРИБЫТИИ (<= 3 блоков)
+        if (distance <= 3) {
+            ClientGpsState.activeTarget = null;
+            
+            player.sendMessage(
+                new StringTextComponent("🏁 Вы прибыли в пункт назначения!")
+                    .withStyle(TextFormatting.GOLD, TextFormatting.BOLD),
+                player.getUUID()
+            );
+            
+            if (mc.level != null) {
+                mc.level.playSound(player, player.blockPosition(), SoundEvents.PLAYER_LEVELUP, SoundCategory.PLAYERS, 1.0F, 1.0F);
             }
+            return;
         }
+
+        double targetAngle = Math.toDegrees(Math.atan2(dz, dx)) - 90.0;
+        double relativeAngle = MathHelper.wrapDegrees(targetAngle - player.yRot);
+
+        renderGpsPanel(event.getMatrixStack(), mc, distance, target.getX(), target.getZ(), relativeAngle);
     }
 
     private static void renderGpsPanel(MatrixStack matrix, Minecraft mc, int distance, int targetX, int targetZ, double angle) {
         int screenWidth = mc.getWindow().getGuiScaledWidth();
+        int screenHeight = mc.getWindow().getGuiScaledHeight();
         
-        // Размеры и позиция виджета (верхний правый угол)
         int width = 130;
         int height = 50;
-        int x = screenWidth - width - 10;
-        int y = 10;
 
-        // 1. Фон бортового компьютера
+        // ПРАВЫЙ НИЖНИЙ УГОЛ
+        int x = screenWidth - width - 10;
+        int y = screenHeight - height - 10;
+
+        // Фон
         AbstractGui.fill(matrix, x, y, x + width, y + height, 0xDD0F172A);
-        
-        // 2. Неоновая акцентная рамка
+        // Неоновые рамки
         AbstractGui.fill(matrix, x, y, x + width, y + 2, 0xFF00E5FF);
         AbstractGui.fill(matrix, x, y + height - 1, x + width, y + height, 0x4400E5FF);
 
-        // 3. Заголовок
+        // Заголовок
         mc.font.draw(matrix, new StringTextComponent("● ").withStyle(TextFormatting.GREEN)
                 .append(new StringTextComponent("GPS NAVIGATOR").withStyle(TextFormatting.BOLD, TextFormatting.WHITE)), 
                 x + 8, y + 6, 0xFFFFFFFF);
 
-        // 4. Указатель направления и дистанция
+        // Стрелка и дистанция
         String directionArrow = getArrowSymbol(angle);
         String distText = distance + " м";
         mc.font.draw(matrix, new StringTextComponent(directionArrow + " ").withStyle(TextFormatting.AQUA)
                 .append(new StringTextComponent(distText).withStyle(TextFormatting.YELLOW, TextFormatting.BOLD)), 
                 x + 10, y + 20, 0xFFFFFFFF);
 
-        // 5. Координаты цели
+        // Координаты цели
         String coordsText = "X: " + targetX + " | Z: " + targetZ;
         mc.font.draw(matrix, new StringTextComponent(coordsText).withStyle(TextFormatting.GRAY), 
                 x + 10, y + 34, 0xFFAAAAAA);
