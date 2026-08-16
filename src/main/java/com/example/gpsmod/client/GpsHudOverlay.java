@@ -4,7 +4,10 @@ import com.example.gpsmod.GPSMod;
 import com.mojang.blaze3d.matrix.MatrixStack;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.player.ClientPlayerEntity;
+import net.minecraft.client.gui.AbstractGui;
+import net.minecraft.item.Items;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.text.StringTextComponent;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraftforge.api.distmarker.Dist;
@@ -14,9 +17,9 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 
 @Mod.EventBusSubscriber(modid = GPSMod.MOD_ID, value = Dist.CLIENT)
-public class GpsHudOverlay {
+public class GPSHudOverlay {
 
-    // 1. Проверка прибытия в точку каждый тик
+    // 1. Проверка авто-завершения маршрута при приближении (менее 3 блоков)
     @SubscribeEvent
     public static void onClientTick(TickEvent.ClientTickEvent event) {
         if (event.phase != TickEvent.Phase.END) return;
@@ -29,10 +32,8 @@ public class GpsHudOverlay {
 
         double dx = playerPos.getX() - targetPos.getX();
         double dz = playerPos.getZ() - targetPos.getZ();
-        double distanceSq = dx * dx + dz * dz;
 
-        // Если игрок подошел ближе чем на 3 блока по горизонтали
-        if (distanceSq <= 9.0) {
+        if ((dx * dx + dz * dz) <= 9.0) {
             mc.player.sendMessage(
                 new StringTextComponent("✅ Вы прибыли в пункт назначения: ")
                     .append(new StringTextComponent(ClientGPSData.targetName).withStyle(TextFormatting.GREEN)),
@@ -42,7 +43,7 @@ public class GpsHudOverlay {
         }
     }
 
-    // 2. Отрисовка HUD строго в правом нижнем углу
+    // 2. Отрисовка полноценной плашки HUD с фоном, координатами и стрелкой направления
     @SubscribeEvent
     public static void onRenderOverlay(RenderGameOverlayEvent.Post event) {
         if (event.getType() != RenderGameOverlayEvent.ElementType.ALL) return;
@@ -52,6 +53,12 @@ public class GpsHudOverlay {
         ClientPlayerEntity player = mc.player;
         if (player == null) return;
 
+        // Показываем HUD если установлен маршрут и компас в руках (или левой руке)
+        boolean hasCompass = player.getHeldItemMainhand().getItem() == Items.COMPASS 
+                          || player.getHeldItemOffhand().getItem() == Items.COMPASS;
+
+        if (!hasCompass) return;
+
         MatrixStack matrixStack = event.getMatrixStack();
         int screenWidth = mc.getWindow().getGuiScaledWidth();
         int screenHeight = mc.getWindow().getGuiScaledHeight();
@@ -59,15 +66,46 @@ public class GpsHudOverlay {
         BlockPos target = ClientGPSData.targetPos;
         int distance = (int) Math.sqrt(player.distanceToSqr(target.getX(), target.getY(), target.getZ()));
 
-        String nameText = "📍 " + ClientGPSData.targetName;
-        String distText = "📏 Дистанция: " + distance + "m";
-        String posText = "🎯 X: " + target.getX() + " Z: " + target.getZ();
+        // Вычисление направления стрелки относительно поворота игрока
+        String arrow = getDirectionArrow(player, target);
 
-        int x = screenWidth - 150;
-        int y = screenHeight - 45;
+        // Размеры и позиция карточки в правом нижнем углу
+        int width = 160;
+        int height = 50;
+        int x = screenWidth - width - 10;
+        int y = screenHeight - height - 10;
 
-        mc.font.draw(matrixStack, nameText, x, y, 0xFFFF55);
-        mc.font.draw(matrixStack, distText, x, y + 10, 0xFFFFFF);
-        mc.font.draw(matrixStack, posText, x, y + 20, 0xAAAAAA);
+        // Отрисовка полупрозрачного фона карточки
+        AbstractGui.fill(matrixStack, x, y, x + width, y + height, 0xD0101010);
+        // Зеленая полоса акцента слева
+        AbstractGui.fill(matrixStack, x, y, x + 3, y + height, 0xFF55FF55);
+
+        // Текст информации
+        String titleText = "📍 " + ClientGPSData.targetName + " " + arrow;
+        String distText = "📏 Дистанция: " + distance + "м";
+        String posText = "🎯 [X: " + target.getX() + " | Z: " + target.getZ() + "]";
+
+        mc.font.draw(matrixStack, titleText, x + 8, y + 6, 0xFFFF55);
+        mc.font.draw(matrixStack, distText, x + 8, y + 20, 0xFFFFFF);
+        mc.font.draw(matrixStack, posText, x + 8, y + 34, 0xAAAAAA);
+    }
+
+    // Расчет стрелки указателя (⬆️, ↗️, ➡️, ↘️, ⬇️, ↙️, ⬅️, ↖️)
+    private static String getDirectionArrow(ClientPlayerEntity player, BlockPos target) {
+        double dx = target.getX() - player.getX();
+        double dz = target.getZ() - player.getZ();
+
+        double angleToTarget = Math.toDegrees(Math.atan2(dz, dx)) - 90.0;
+        double playerYaw = player.yRot;
+        double diff = MathHelper.wrapDegrees(angleToTarget - playerYaw);
+
+        if (diff >= -22.5 && diff < 22.5) return "⬆️";
+        if (diff >= 22.5 && diff < 67.5) return "↗️";
+        if (diff >= 67.5 && diff < 112.5) return "➡️";
+        if (diff >= 112.5 && diff < 157.5) return "↘️";
+        if (diff >= 157.5 || diff < -157.5) return "⬇️";
+        if (diff >= -157.5 && diff < -112.5) return "↙️";
+        if (diff >= -112.5 && diff < -67.5) return "⬅️";
+        return "↖️";
     }
 }
