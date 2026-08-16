@@ -3,9 +3,8 @@ package com.example.gpsmod.network;
 import com.example.gpsmod.data.BeaconSavedData;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.network.PacketBuffer;
-import net.minecraft.world.World;
+import net.minecraft.world.server.ServerWorld;
 import net.minecraftforge.fml.network.NetworkEvent;
-import net.minecraftforge.fml.network.PacketDistributor;
 
 import java.util.function.Supplier;
 
@@ -23,9 +22,9 @@ public class C2SRequestBeaconsPacket {
         context.enqueueWork(() -> {
             ServerPlayerEntity player = context.getSender();
             if (player != null) {
-                World world = player.getCommandSenderWorld();
-                BeaconSavedData data = BeaconSavedData.get(world);
-                PacketHandler.CHANNEL.send(PacketDistributor.PLAYER.with(() -> player), new S2CSendBeaconsPacket(data.getBeacons()));
+                ServerWorld world = player.getLevel();
+                BeaconSavedData savedData = BeaconSavedData.get(world);
+                PacketHandler.sendToPlayer(new S2CSendBeaconsPacket(savedData.getBeacons()), player);
             }
         });
         context.setPacketHandled(true);
