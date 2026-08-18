@@ -66,10 +66,10 @@ public class ServerEventHandler {
         PlayerEntity player = event.getPlayer();
         if (player != null && event.getItemStack().getItem() == Items.COMPASS) {
             BeaconSavedData savedData = BeaconSavedData.get(world);
-            PacketHandler.sendToPlayer(
-                new S2CSendBeaconsPacket(savedData.getBeacons()), 
-                (ServerPlayerEntity) player
-            );
+            ModNetwork.CHANNEL.send(
+    net.minecraftforge.fml.network.PacketDistributor.PLAYER.with(() -> player), 
+    new SaveWaypointPacket(pos, name)
+);
         }
     }
 }

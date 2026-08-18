@@ -17,16 +17,17 @@ public class C2SRequestBeaconsPacket {
         return new C2SRequestBeaconsPacket();
     }
 
-    public static void handle(C2SRequestBeaconsPacket msg, Supplier<NetworkEvent.Context> ctx) {
-        NetworkEvent.Context context = ctx.get();
-        context.enqueueWork(() -> {
-            ServerPlayerEntity player = context.getSender();
-            if (player != null) {
-                ServerWorld world = player.getLevel();
-                BeaconSavedData savedData = BeaconSavedData.get(world);
-                net.minecraft.entity.player.ServerPlayerEntity player = ctx.get().getSender();
-            }
-        });
-        context.setPacketHandled(true);
-    }
+    public static void handle(C2SRequestBeaconsPacket msg, Supplier<NetworkEvent.Context> ctxSupplier) {
+    NetworkEvent.Context ctx = ctxSupplier.get();
+    
+    ctx.enqueueWork(() -> {
+        // Объявляем player ТОЛЬКО ОДИН РАЗ внутри enqueueWork
+        ServerPlayerEntity player = ctx.getSender();
+        if (player != null) {
+            // Ваша логика отправки меток игроку...
+        }
+    });
+    
+    ctx.setPacketHandled(true);
+}
 }
