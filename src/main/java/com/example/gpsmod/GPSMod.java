@@ -10,6 +10,7 @@ public class GPSMod {
     public static final String MOD_ID = "gpsmod";
 
     public GPSMod() {
+        // Загружается и на сервере, и на клиенте
         FMLJavaModLoadingContext.get().getModEventBus().addListener(this::setup);
     }
 

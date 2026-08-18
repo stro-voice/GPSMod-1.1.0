@@ -6,8 +6,6 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.AbstractGui;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.text.ITextComponent;
-import net.minecraft.util.text.TranslationTextComponent;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.RenderGameOverlayEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -27,12 +25,10 @@ public class ClientHUDOverlay {
         BlockPos target = ClientWaypointManager.getTargetPos();
         if (target == null) return;
 
-        // Расчет дистанции
         double dx = target.getX() + 0.5 - mc.player.getX();
         double dz = target.getZ() + 0.5 - mc.player.getZ();
         int distance = (int) MathHelper.sqrt(dx * dx + dz * dz);
 
-        // Расчет угла для стрелки/компаса
         double targetAngle = Math.toDegrees(Math.atan2(dz, dx)) - 90.0;
         double relativeAngle = MathHelper.wrapDegrees(targetAngle - mc.player.yRot);
 
@@ -42,7 +38,6 @@ public class ClientHUDOverlay {
         MatrixStack matrixStack = event.getMatrixStack();
         int screenWidth = mc.getWindow().getGuiScaledWidth();
 
-        // Отрисовка по центру верхней части экрана
         int x = (screenWidth - mc.font.width(hudText)) / 2;
         int y = 10;
 
