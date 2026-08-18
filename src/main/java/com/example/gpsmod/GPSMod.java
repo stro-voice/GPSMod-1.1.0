@@ -1,20 +1,18 @@
 package com.example.gpsmod;
 
-import com.example.gpsmod.network.GPSNetwork;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.fml.DistExecutor;
 import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
-import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 
 @Mod(GPSMod.MOD_ID)
 public class GPSMod {
     public static final String MOD_ID = "gpsmod";
 
     public GPSMod() {
-        // Загружается и на сервере, и на клиенте
-        FMLJavaModLoadingContext.get().getModEventBus().addListener(this::setup);
-    }
+        MinecraftForge.EVENT_BUS.register(this);
 
-    private void setup(final FMLCommonSetupEvent event) {
-        event.enqueueWork(GPSNetwork::registerMessages);
+        // Безопасный запуск клиентской логики только на клиенте
+        DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> ClientSetup::init);
     }
 }
