@@ -2,7 +2,9 @@ package com.example.gpsmod.client;
 
 import com.example.gpsmod.data.BeaconEntry;
 import com.example.gpsmod.network.C2SSelectBeaconPacket;
-import com.example.gpsmod.network.PacketHandler;
+import com.example.gpsmod.network.ModNetwork;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.screen.Screen;
 import com.mojang.blaze3d.matrix.MatrixStack;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.button.Button;

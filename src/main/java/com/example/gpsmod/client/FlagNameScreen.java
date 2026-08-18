@@ -1,7 +1,8 @@
 package com.example.gpsmod.client;
 
 import com.example.gpsmod.network.C2SRegisterBeaconPacket;
-import com.example.gpsmod.network.PacketHandler;
+import com.example.gpsmod.network.ModNetwork;
+import com.example.gpsmod.network.SaveWaypointPacket;
 import com.mojang.blaze3d.matrix.MatrixStack;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.TextFieldWidget;
@@ -43,9 +44,11 @@ public class FlagNameScreen extends Screen {
                 String name = this.nameField.getValue().trim();
                 if (name.isEmpty()) {
                     name = "Флаг " + pos.getX() + ", " + pos.getZ();
-                }
-                PacketHandler.sendToServer(new C2SRegisterBeaconPacket(pos, name));
-                this.onClose();
+// ❌ Было (старый вызов):
+// PacketHandler.sendToServer(new OldSavePacket(...));
+
+// ✅ Стало:
+ModNetwork.CHANNEL.sendToServer(new SaveWaypointPacket(this.pos, nameText));
             }
         ));
     }

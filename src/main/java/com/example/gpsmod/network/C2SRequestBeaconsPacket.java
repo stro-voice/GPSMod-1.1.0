@@ -24,7 +24,7 @@ public class C2SRequestBeaconsPacket {
             if (player != null) {
                 ServerWorld world = player.getLevel();
                 BeaconSavedData savedData = BeaconSavedData.get(world);
-                PacketHandler.sendToPlayer(new S2CSendBeaconsPacket(savedData.getBeacons()), player);
+                net.minecraft.entity.player.ServerPlayerEntity player = ctx.get().getSender();
             }
         });
         context.setPacketHandled(true);

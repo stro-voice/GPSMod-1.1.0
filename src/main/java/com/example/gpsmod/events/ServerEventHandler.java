@@ -3,7 +3,7 @@ package com.example.gpsmod.events;
 import com.example.gpsmod.GPSMod;
 import com.example.gpsmod.client.FlagNameScreen;
 import com.example.gpsmod.data.BeaconSavedData;
-import com.example.gpsmod.network.PacketHandler;
+import com.example.gpsmod.network.ModNetwork;
 import com.example.gpsmod.network.S2CSendBeaconsPacket;
 import net.minecraft.block.BannerBlock;
 import net.minecraft.block.Block;
