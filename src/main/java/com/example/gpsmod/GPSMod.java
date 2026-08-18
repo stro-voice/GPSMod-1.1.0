@@ -1,6 +1,6 @@
 package com.example.gpsmod;
 
-import com.example.gpsmod.network.PacketHandler;
+import com.example.gpsmod.network.GPSNetwork;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
@@ -14,6 +14,6 @@ public class GPSMod {
     }
 
     private void setup(final FMLCommonSetupEvent event) {
-        event.enqueueWork(PacketHandler::register);
+        event.enqueueWork(GPSNetwork::registerMessages);
     }
 }
